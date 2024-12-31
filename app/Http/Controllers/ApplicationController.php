@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ApplicationRoleType;
 use App\Http\Requests\Application\StoreRequest;
 use App\Http\Requests\Application\UpdateRequest;
 use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
+use App\Models\ApplicationRole;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -21,9 +23,21 @@ class ApplicationController extends Controller
             abort(403);
         }
         $applications = QueryBuilder::for(Application::class)
+            ->allowedIncludes([
+                'applicationQuestions',
+                'acceptedResponses',
+                'deniedResponses',
+                'restrictedRoles',
+                'acceptedRoles',
+                'deniedRoles',
+                'pingRoles',
+                'acceptRemovalRoles',
+                'denyRemovalRoles',
+                'pendingRoles',
+            ])
             ->allowedFilters([
-                'question',
                 AllowedFilter::exact('id'),
+                'name',
             ])
             ->getOrPaginate();
 
@@ -35,7 +49,105 @@ class ApplicationController extends Controller
      */
     public function store(StoreRequest $request): ApplicationResource
     {
-        return new ApplicationResource(Application::create($request->validated()));
+        $data = $request->validated();
+        $data = [
+            ...$data,
+            'guild_id' => config('services.discord.server_id'),
+        ];
+        $application = Application::create($data);
+
+        if (array_key_exists('restricted_role_ids', $data)) {
+            /**
+             * @var array<string>
+             */
+            $restrictedRoleIds = $data['restricted_role_ids'];
+            $restrictedRole = collect($restrictedRoleIds)->map(fn ($restrictedRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $restrictedRoleId,
+                'type' => ApplicationRoleType::Restricted,
+            ]);
+            ApplicationRole::insert($restrictedRole->toArray());
+        }
+
+        if (array_key_exists('accepted_role_ids', $data)) {
+            /**
+             * @var array<string>
+             */
+            $acceptedRoleIds = $data['accepted_role_ids'];
+            $acceptedRole = collect($acceptedRoleIds)->map(fn ($acceptedRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $acceptedRoleId,
+                'type' => ApplicationRoleType::Accepted,
+            ]);
+            ApplicationRole::insert($acceptedRole->toArray());
+        }
+
+        if (array_key_exists('denied_role_ids', $data)) {
+            /**
+             * @var array<string>
+             */
+            $deniedRoleIds = $data['denied_role_ids'];
+            $deniedRole = collect($deniedRoleIds)->map(fn ($deniedRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $deniedRoleId,
+                'type' => ApplicationRoleType::Denied,
+            ]);
+            ApplicationRole::insert($deniedRole->toArray());
+        }
+
+        if (array_key_exists('ping_role_ids', $data)) {
+            /**
+             * @var array<string>
+             */
+            $pingRoleIds = $data['ping_role_ids'];
+            $pingRole = collect($pingRoleIds)->map(fn ($pingRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $pingRoleId,
+                'type' => ApplicationRoleType::Ping,
+            ]);
+            ApplicationRole::insert($pingRole->toArray());
+        }
+
+        if (array_key_exists('accept_removal_role_ids', $data)) {
+            /**
+             * @var array<string>
+             */
+            $acceptRemovalRoleIds = $data['accept_removal_role_ids'];
+            $acceptRemovalRole = collect($acceptRemovalRoleIds)->map(fn ($acceptRemovalRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $acceptRemovalRoleId,
+                'type' => ApplicationRoleType::AcceptRemoval,
+            ]);
+            ApplicationRole::insert($acceptRemovalRole->toArray());
+        }
+
+        if (array_key_exists('deny_removal_role_ids', $data)) {
+            /**
+             * @var array<string>
+             */
+            $denyRemovalRoleIds = $data['deny_removal_role_ids'];
+            $denyRemovalRole = collect($denyRemovalRoleIds)->map(fn ($denyRemovalRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $denyRemovalRoleId,
+                'type' => ApplicationRoleType::DenyRemoval,
+            ]);
+            ApplicationRole::insert($denyRemovalRole->toArray());
+        }
+
+        if (array_key_exists('pending_role_ids', $data)) {
+            /**
+             * @var array<string>
+             */
+            $pendingRoleIds = $data['pending_role_ids'];
+            $pendingRole = collect($pendingRoleIds)->map(fn ($pendingRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $pendingRoleId,
+                'type' => ApplicationRoleType::Pending,
+            ]);
+            ApplicationRole::insert($pendingRole->toArray());
+        }
+
+        return new ApplicationResource($application);
     }
 
     /**
@@ -43,9 +155,108 @@ class ApplicationController extends Controller
      */
     public function update(UpdateRequest $request, Application $application): ApplicationResource
     {
-        $application->update($request->validated());
+        $data = $request->validated();
+        $application->update($data);
 
-        return new ApplicationResource($application->refresh());
+        if (array_key_exists('restricted_role_ids', $data)) {
+            $application->restrictedRoles()->delete();
+            /**
+             * @var array<string>
+             */
+            $restrictedRoleIds = $data['restricted_role_ids'];
+            $restrictedRole = collect($restrictedRoleIds)->map(fn ($restrictedRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $restrictedRoleId,
+                'type' => ApplicationRoleType::Restricted,
+            ]);
+            ApplicationRole::insert($restrictedRole->toArray());
+        }
+
+        if (array_key_exists('accepted_role_ids', $data)) {
+            $application->acceptedRoles()->delete();
+            /**
+             * @var array<string>
+             */
+            $acceptedRoleIds = $data['accepted_role_ids'];
+            $acceptedRole = collect($acceptedRoleIds)->map(fn ($acceptedRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $acceptedRoleId,
+                'type' => ApplicationRoleType::Accepted,
+            ]);
+            ApplicationRole::insert($acceptedRole->toArray());
+        }
+
+        if (array_key_exists('denied_role_ids', $data)) {
+            $application->deniedRoles()->delete();
+            /**
+             * @var array<string>
+             */
+            $deniedRoleIds = $data['denied_role_ids'];
+            $deniedRole = collect($deniedRoleIds)->map(fn ($deniedRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $deniedRoleId,
+                'type' => ApplicationRoleType::Denied,
+            ]);
+            ApplicationRole::insert($deniedRole->toArray());
+        }
+
+        if (array_key_exists('ping_role_ids', $data)) {
+            $application->pingRoles()->delete();
+            /**
+             * @var array<string>
+             */
+            $pingRoleIds = $data['ping_role_ids'];
+            $pingRole = collect($pingRoleIds)->map(fn ($pingRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $pingRoleId,
+                'type' => ApplicationRoleType::Ping,
+            ]);
+            ApplicationRole::insert($pingRole->toArray());
+        }
+
+        if (array_key_exists('accept_removal_role_ids', $data)) {
+            $application->acceptRemovalRoles()->delete();
+            /**
+             * @var array<string>
+             */
+            $acceptRemovalRoleIds = $data['accept_removal_role_ids'];
+            $acceptRemovalRole = collect($acceptRemovalRoleIds)->map(fn ($acceptRemovalRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $acceptRemovalRoleId,
+                'type' => ApplicationRoleType::AcceptRemoval,
+            ]);
+            ApplicationRole::insert($acceptRemovalRole->toArray());
+        }
+
+        if (array_key_exists('deny_removal_role_ids', $data)) {
+            $application->denyRemovalRoles()->delete();
+            /**
+             * @var array<string>
+             */
+            $denyRemovalRoleIds = $data['deny_removal_role_ids'];
+            $denyRemovalRole = collect($denyRemovalRoleIds)->map(fn ($denyRemovalRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $denyRemovalRoleId,
+                'type' => ApplicationRoleType::DenyRemoval,
+            ]);
+            ApplicationRole::insert($denyRemovalRole->toArray());
+        }
+
+        if (array_key_exists('pending_role_ids', $data)) {
+            $application->pendingRoles()->delete();
+            /**
+             * @var array<string>
+             */
+            $pendingRoleIds = $data['pending_role_ids'];
+            $pendingRole = collect($pendingRoleIds)->map(fn ($pendingRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $pendingRoleId,
+                'type' => ApplicationRoleType::Pending,
+            ]);
+            ApplicationRole::insert($pendingRole->toArray());
+        }
+
+        return new ApplicationResource($application);
     }
 
     /**

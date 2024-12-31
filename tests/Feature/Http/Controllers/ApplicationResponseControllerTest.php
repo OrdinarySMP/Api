@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\ApplicationResponseType;
+use App\Models\Application;
 use App\Models\ApplicationResponse;
 use App\Models\User;
 
@@ -16,10 +17,12 @@ test('auth user can get application response', function () {
 
 test('can create application response', function () {
     $user = User::factory()->owner()->create();
+    $application = Application::factory()->create();
     $data = [
         'type' => ApplicationResponseType::Accepted->value,
         'name' => 'Test',
         'response' => 'Test',
+        'application_id' => $application->id,
     ];
 
     $this->actingAs($user)
@@ -32,15 +35,17 @@ test('can create application response', function () {
 
 test('can update application response', function () {
     $user = User::factory()->owner()->create();
-    $application = ApplicationResponse::factory()->create();
+    $applicationResponse = ApplicationResponse::factory()->create();
+    $application = Application::factory()->create();
     $data = [
         'type' => ApplicationResponseType::Accepted->value,
         'name' => 'Test',
         'response' => 'Test',
+        'application_id' => $application->id,
     ];
 
     $this->actingAs($user)
-        ->patchJson(route('application-response.update', $application), $data)
+        ->patchJson(route('application-response.update', $applicationResponse), $data)
         ->assertOk()
         ->assertJson(['data' => $data]);
 
@@ -49,11 +54,11 @@ test('can update application response', function () {
 
 test('can delete application response', function () {
     $user = User::factory()->owner()->create();
-    $application = ApplicationResponse::factory()->create();
+    $applicationResponse = ApplicationResponse::factory()->create();
 
     $this->actingAs($user)
-        ->deleteJson(route('application-response.destroy', $application))
+        ->deleteJson(route('application-response.destroy', $applicationResponse))
         ->assertOk();
 
-    $this->assertDatabaseMissing('application_responses', $application->toArray());
+    $this->assertSoftDeleted('application_responses', ['id' => $applicationResponse->id]);
 });
