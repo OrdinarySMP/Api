@@ -2,8 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Enums\ApplicationState;
-use App\Models\ApplicationResponse;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,11 +17,14 @@ class ApplicationFactory extends Factory
     public function definition(): array
     {
         return [
-            'discord_id' => (string) fake()->numberBetween(1, 999),
-            'submitted_at' => fake()->dateTimeBetween('-2 years', '+2 years')->format('Y-m-d H:i:s'),
-            'application_response_id' => ApplicationResponse::factory()->create(),
-            'state' => fake()->randomElement(ApplicationState::cases()),
-            'custom_response' => fake()->optional()->sentence(2),
+            'guild_id' => config('services.discord.server_id'),
+            'name' => fake()->name(),
+            'is_active' => fake()->boolean(),
+            'log_channel' => (string) fake()->numberBetween(100000000000000000, 999999999999999999),
+            'accept_message' => fake()->sentence(2),
+            'deny_message' => fake()->sentence(2),
+            'confirmation_message' => fake()->sentence(2),
+            'completion_message' => fake()->sentence(2),
         ];
     }
 }

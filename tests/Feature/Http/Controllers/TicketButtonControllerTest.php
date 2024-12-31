@@ -40,7 +40,6 @@ test('can create ticket buttons', function () {
     $this->assertDatabaseHas('ticket_buttons', collect($data)->except('ticket_button_ping_role_ids')->toArray());
 
     expect(TicketButton::count())->toBe(1);
-    dump(TicketButton::first()->ticketButtonPingRoles);
     expect(TicketButton::first()->ticketButtonPingRoles->map(fn ($ticketButtonPingRole) => $ticketButtonPingRole->role_id)->toArray())->toBe(['123', '456']);
 });
 

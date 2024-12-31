@@ -1,8 +1,9 @@
 <?php
 
-use App\Models\Application;
+use App\Enums\ApplicationSubmissionState;
 use App\Models\ApplicationQuestion;
 use App\Models\ApplicationQuestionAnswer;
+use App\Models\ApplicationSubmission;
 use App\Models\User;
 
 test('auth user can get application question answer', function () {
@@ -18,10 +19,12 @@ test('auth user can get application question answer', function () {
 test('can create application question answer', function () {
     $user = User::factory()->owner()->create();
     $applicationQuestion = ApplicationQuestion::factory()->create();
-    $application = Application::factory()->create();
+    $applicationSubmission = ApplicationSubmission::factory()->create([
+        'state' => ApplicationSubmissionState::Pending,
+    ]);
     $data = [
         'application_question_id' => $applicationQuestion->id,
-        'application_id' => $application->id,
+        'application_submission_id' => $applicationSubmission->id,
         'answer' => 'Test',
     ];
 
@@ -37,10 +40,10 @@ test('can update application question answer', function () {
     $user = User::factory()->owner()->create();
     $applicationQuestionAnswer = ApplicationQuestionAnswer::factory()->create();
     $applicationQuestion = ApplicationQuestion::factory()->create();
-    $application = Application::factory()->create();
+    $applicationSubmission = ApplicationSubmission::factory()->create();
     $data = [
         'application_question_id' => $applicationQuestion->id,
-        'application_id' => $application->id,
+        'application_submission_id' => $applicationSubmission->id,
         'answer' => 'Test',
     ];
 

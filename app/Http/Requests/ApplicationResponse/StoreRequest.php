@@ -27,6 +27,7 @@ class StoreRequest extends FormRequest
             'type' => ['required', new Enum(ApplicationResponseType::class)],
             'name' => 'required|string',
             'response' => 'required|string',
+            'application_id' => 'required|exists:applications,id',
         ];
     }
 }
