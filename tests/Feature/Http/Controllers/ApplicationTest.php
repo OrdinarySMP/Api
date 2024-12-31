@@ -24,6 +24,8 @@ test('can create application', function () {
         'application_response_id' => $applicationResponse->id,
         'state' => ApplicationState::Pending->value,
         'custom_response' => 'Test',
+        'message_link' => 'https://example.com',
+        'handled_by' => '123123123123123123',
     ];
 
     $this->actingAs($user)
@@ -44,6 +46,8 @@ test('can update application', function () {
         'application_response_id' => $applicationResponse->id,
         'state' => ApplicationState::Pending->value,
         'custom_response' => 'Test',
+        'message_link' => 'https://example.com',
+        'handled_by' => '123123123123123123',
     ];
 
     $this->actingAs($user)

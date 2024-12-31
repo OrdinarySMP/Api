@@ -22,8 +22,9 @@ class ApplicationController extends Controller
         }
         $applications = QueryBuilder::for(Application::class)
             ->allowedFilters([
-                'question',
                 AllowedFilter::exact('id'),
+                AllowedFilter::exact('discord_id'),
+                AllowedFilter::exact('state'),
             ])
             ->getOrPaginate();
 
