@@ -29,6 +29,8 @@ class UpdateRequest extends FormRequest
             'application_response_id' => 'nullable|exists:application_responses,id',
             'state' => ['required', new Enum(ApplicationState::class)],
             'custom_response' => 'nullable|string',
+            'message_link' => 'required|string|url:https',
+            'handled_by' => 'nullable|string|size:18',
         ];
     }
 }

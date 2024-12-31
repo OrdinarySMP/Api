@@ -21,8 +21,10 @@ class ApplicationQuestionController extends Controller
             abort(403);
         }
         $applicationQuestion = QueryBuilder::for(ApplicationQuestion::class)
+            ->defaultSort('order')
+            ->allowedSorts('order')
             ->allowedFilters([
-                'question',
+                AllowedFilter::exact('is_active'),
                 AllowedFilter::exact('id'),
             ])
             ->getOrPaginate();
