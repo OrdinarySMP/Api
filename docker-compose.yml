@@ -8,3 +8,10 @@ services:
       MARIADB_PASSWORD: ${DB_PASSWORD}
       MARIADB_DATABASE: ${DB_DATABASE}
       MARIADB_ROOT_PASSWORD: ${DB_PASSWORD}
+
+  app:
+    build: ./
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./:/app
