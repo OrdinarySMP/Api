@@ -9,4 +9,6 @@ class Ticket extends Model
 {
     /** @use HasFactory<\Database\Factories\TicketFactory> */
     use HasFactory;
+
+    protected $guarded = ['id', 'created_at', 'udpated_at'];
 }

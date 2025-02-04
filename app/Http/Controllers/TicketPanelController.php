@@ -11,49 +11,36 @@ class TicketPanelController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): AnonymousResourceCollection
     {
-        //
-    }
+        if (! request()->user()?->can('ticketPanel.read')) {
+            abort(403);
+        }
+        $ticketPanels = QueryBuilder::for(TicketPanel::class)
+            ->allowedFilters([
+                AllowedFilter::exact('id'),
+            ])
+            ->getOrPaginate();
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return TicketPanelResource::collection($ticketPanels);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTicketPanelRequest $request)
+    public function store(StoreRequest $request)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(TicketPanel $ticketPanel)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(TicketPanel $ticketPanel)
-    {
-        //
+        return new TicketPanelResource(TicketPanel::create($request->validated()));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTicketPanelRequest $request, TicketPanel $ticketPanel)
+    public function update(UpdateRequest $request, TicketPanel $ticketPanel)
     {
-        //
+        $ticketPanel->update($request->validated());
+
+        return new TicketPanelResource($ticketPanel);
     }
 
     /**
@@ -61,6 +48,10 @@ class TicketPanelController extends Controller
      */
     public function destroy(TicketPanel $ticketPanel)
     {
-        //
+        if (! request()->user()?->can('ticketPanel.delete')) {
+            abort(403);
+        }
+
+        return $ticketPanel->delete() ?? false;
     }
 }

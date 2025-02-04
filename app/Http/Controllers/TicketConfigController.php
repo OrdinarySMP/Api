@@ -13,7 +13,16 @@ class TicketConfigController extends Controller
      */
     public function index()
     {
-        return TicketConfig::where('guild_id', config('services.discord.server_id'))->first();
+        if (! request()->user()?->can('ticketConfig.read')) {
+            abort(403);
+        }
+
+        $guild_id = config('services.discord.server_id');
+
+        if (request()->user()->hasRole('Bot')) {
+            $guild_id = request()->input('filter[guild_id]', $guild_id);
+        }
+        return TicketConfig::where('guild_id', $guild_id)->first();
     }
 
     /**

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\TicketType;
+use App\Models\TicketButton;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::create('tickets', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(TicketType::class);
+            $table->foreignIdFor(TicketButton::class);
             $table->string('channel_id', 20);
             $table->string('state');
             $table->string('created_by_discord_user_id', 20);

@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\TicketConfig;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTicketConfigRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user() && $this->user()->can('ticketConfig.create');
     }
 
     /**
@@ -22,7 +22,9 @@ class StoreTicketConfigRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'category_id' => 'required|max:20',
+            'transcript_channel_id' => 'required|max:20',
+            'create_channel_id' => 'required|max:20',
         ];
     }
 }

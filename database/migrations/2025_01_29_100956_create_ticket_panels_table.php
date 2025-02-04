@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('ticket_panels', function (Blueprint $table) {
             $table->id();
-            $table->string('titel');
-            $table->string('message');
-            $table->string('embed_color');
-            $table->string('channel_id');
+            $table->string('titel', 100);
+            $table->string('message', 1000);
+            $table->string('embed_color', 7);
+            $table->string('channel_id', 20);
             $table->timestamps();
         });
     }

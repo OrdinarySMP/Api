@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\TicketType;
+use App\Models\TicketButton;
 use App\Models\TicketTeam;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ticket_type_teams', function (Blueprint $table) {
+        Schema::create('ticket_buttons_teams', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(TicketType::class);
+            $table->foreignIdFor(TicketButton::class);
             $table->foreignIdFor(TicketTeam::class);
             $table->timestamps();
         });

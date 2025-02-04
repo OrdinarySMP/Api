@@ -15,21 +15,23 @@ RUN apk add --no-cache \
     imap-dev \
     dovecot \
     shadow \
-    icu-data-full \
-    && \
-    NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) && \
-    docker-php-ext-configure gd --with-webp --with-jpeg && \
+    icu-data-full
+
+RUN docker-php-ext-configure gd --with-webp --with-jpeg
+RUN NPROC=$(grep -c ^processor /proc/cpuinfo 2>/dev/null || 1) && \
     docker-php-ext-install -j${NPROC} \
-        pdo_pgsql  \
+        mysqli \
+        pdo \
+        pdo_mysql \
         bcmath  \
         intl \
         gd \
         calendar \
         zip \
         imap \
-        pcntl \
-        && \
-    pecl install xdebug-${XDEBUG_VERSION} && \
+        pcntl
+
+RUN pecl install xdebug-${XDEBUG_VERSION} && \
     pecl install redis openswoole && \
     docker-php-ext-enable redis openswoole && \
     apk del autoconf g++ make && \

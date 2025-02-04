@@ -12,11 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('ticket_types', function (Blueprint $table) {
+        Schema::create('ticket_buttons', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(TicketTeam::class);
-            $table->string('button_text', 50);
-            $table->string('button_color', 7);
+            $table->string('text', 50);
+            $table->string('color', 7);
             $table->string('initial_message', 1000);
             $table->string('emoji');
             $table->string('naming_scheme');
@@ -29,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('ticket_types');
+        Schema::dropIfExists('ticket_buttons');
     }
 };

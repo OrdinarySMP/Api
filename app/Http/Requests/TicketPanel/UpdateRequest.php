@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\TicketPanel;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreTicketPanelRequest extends FormRequest
+class UpdateRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user() && $this->user()->can('ticketPanel.update');
     }
 
     /**
@@ -22,7 +22,10 @@ class StoreTicketPanelRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'titel' => 'required|string|max:100',
+            'message' => 'required|string|max:100',
+            'embed_color' => 'required|string|max:7',
+            'channel_id' => 'required|string|max:20',
         ];
     }
 }
