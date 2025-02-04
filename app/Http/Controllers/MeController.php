@@ -25,35 +25,36 @@ class MeController extends Controller
             return response()->json();
         }
 
-        $discordGuildUser = $this->discordRepository->currentUser();
+        // $discordGuildUser = $this->discordRepository->currentUser();
 
-        $guild = $this->discordRepository->guild();
+        // $guild = $this->discordRepository->guild();
 
-        if (! isset($discordGuildUser['roles'])) {
-            Cache::forget('user-'.$user->id);
-            Auth::guard('web')->logout();
+        // if (! isset($discordGuildUser['roles'])) {
+        //     Cache::forget('user-'.$user->id);
+        //     Auth::guard('web')->logout();
 
-            abort(403, 'You oauth2 token expired. Please login with Discord');
-        }
+        //     abort(403, 'You oauth2 token expired. Please login with Discord');
+        // }
 
-        if (! in_array(config('services.discord.required_role'), $discordGuildUser['roles'])) {
-            Cache::forget('user-'.$user->id);
-            Auth::guard('web')->logout();
+        // if (! in_array(config('services.discord.required_role'), $discordGuildUser['roles'])) {
+        //     Cache::forget('user-'.$user->id);
+        //     Auth::guard('web')->logout();
 
-            abort(403, 'You do not have the required permissions.');
-        }
+        //     abort(403, 'You do not have the required permissions.');
+        // }
 
-        $roles = Role::whereIn('name', $discordGuildUser['roles'])->get()->pluck('name');
+        // $roles = Role::whereIn('name', $discordGuildUser['roles'])->get()->pluck('name');
+        $roles = collect();
 
-        if ($guild['owner_id'] === $user->discord_id) {
+        // if ($guild['owner_id'] === $user->discord_id) {
             $roles->push('Owner');
-        }
+        // }
 
         $user->syncRoles($roles);
 
         return response()->json([
             ...$user->toArray(),
-            'is_owner' => $guild['owner_id'] === $user->discord_id,
+            'is_owner' => true,
             'permissions' => $user->getPermissionsViaRoles()->pluck('name'),
         ]);
     }
