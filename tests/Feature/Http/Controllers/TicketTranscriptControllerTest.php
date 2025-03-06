@@ -3,6 +3,7 @@
 use App\Models\Ticket;
 use App\Models\TicketTranscript;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
 
 test('can create ticket transcript', function () {
@@ -55,5 +56,21 @@ test('can udpate ticket transcript', function () {
     $this->assertDatabaseHas('ticket_transcripts', [
         'id' => $ticketTranscript->id,
         ...$data,
+    ]);
+});
+
+test('can delete ticket transcript', function () {
+    Carbon::setTestNow();
+
+    $ticketTranscript = TicketTranscript::factory()->create();
+    $user = User::factory()->owner()->create();
+
+    $this->actingAs($user)
+        ->deleteJson(route('transcript.delete', $ticketTranscript->message_id))
+        ->assertOk();
+
+    $this->assertDatabaseHas('ticket_transcripts', [
+        'id' => $ticketTranscript->id,
+        'deleted_at' => now(),
     ]);
 });
