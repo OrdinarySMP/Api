@@ -60,6 +60,7 @@ Route::middleware('auth:sanctum')->group(function () {
         ], ['except' => ['show']]);
 
         Route::apiResource('transcript', TicketTranscriptController::class)->only(['store']);
+        Route::delete('transcript/{messageId}', [TicketTranscriptController::class, 'delete'])->name('transcript.delete');
         Route::apiResource('config', TicketConfigController::class)->only(['index', 'store']);
         Route::post('config/setup', [TicketConfigController::class, 'setup'])->name('config.setup');
         Route::post('panel/{panel}/send', [TicketPanelController::class, 'send'])->name('panel.send');

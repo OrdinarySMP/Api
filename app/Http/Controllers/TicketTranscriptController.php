@@ -19,4 +19,12 @@ class TicketTranscriptController extends Controller
 
         return new TicketTranscriptResource(TicketTranscript::where('message_id', $request->validated('message_id'))->first());
     }
+
+    public function delete(string $messageId): void
+    {
+        if (! request()->user()?->can('ticketTranscript.delete')) {
+            abort(403);
+        }
+        TicketTranscript::where('message_id', $messageId)->update(['deleted_at' => now()]);
+    }
 }
