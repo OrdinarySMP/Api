@@ -20,6 +20,7 @@ class TicketButtonResource extends JsonResource
         return [
             ...$ticketButton->toArray(),
             'color_name' => $ticketButton->color->name,
+            'ticket_button_ping_roles' => TicketButtonPingRoleResource::collection($this->whenLoaded('ticketButtonPingRoles')),
         ];
     }
 }

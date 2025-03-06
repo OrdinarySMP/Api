@@ -9,10 +9,14 @@ class TicketPanelRepository
 {
     public function sendPanel(TicketPanel $ticketPanel): bool
     {
+        $buttons = $ticketPanel->ticketButtons()->where('disabled', false)->get();
+        if ($buttons->isEmpty()) {
+            return false;
+        }
         /**
          * @var mixed $components
          */
-        $components = $ticketPanel->ticketButtons->map(function ($ticketButton): array {
+        $components = $buttons->map(function ($ticketButton): array {
             $emoji = ['name' => $ticketButton->emoji];
             if (str_contains($ticketButton->emoji, '<') && str_contains($ticketButton->emoji, '>')) {
                 $discordEmoji = str_replace('<', '', $ticketButton->emoji);
