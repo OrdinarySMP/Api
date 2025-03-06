@@ -28,6 +28,7 @@ test('can create ticket buttons', function () {
         'initial_message' => 'Test',
         'emoji' => '⚠️',
         'naming_scheme' => '%id%-Channel',
+        'disabled' => false,
         'ticket_button_ping_role_ids' => ['123', '456'],
     ];
 
@@ -56,6 +57,7 @@ test('can update ticket buttons', function () {
         'initial_message' => 'Test',
         'emoji' => '⚠️',
         'naming_scheme' => '%id%-Channel',
+        'disabled' => false,
         'ticket_button_ping_role_ids' => ['123', '456'],
     ];
 

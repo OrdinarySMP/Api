@@ -17,6 +17,7 @@ class TicketButton extends Model
 
     protected $casts = [
         'color' => DiscordButton::class,
+        'disabled' => 'boolean',
     ];
 
     /**
