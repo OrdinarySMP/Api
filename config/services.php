@@ -35,6 +35,10 @@ return [
         ],
     ],
 
+    'frontend' => [
+        'base_url' => env('SERVICES_FRONTEND_BASE_URL'),
+    ],
+
     'discord' => [
         'api_url' => 'https://discord.com/api/v10',
         'client_id' => env('DISCORD_CLIENT_ID'),

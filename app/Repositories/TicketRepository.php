@@ -159,6 +159,13 @@ class TicketRepository
          */
         $ticketConfig = TicketConfig::where('guild_id', $guildId)->first();
 
+        $transcriptButton = [
+            'type' => 2, // button
+            'style' => DiscordButton::Link,
+            'label' => 'Transcript',
+            'url' => config('services.frontend.base_url').'/ticket/transcript/'.$ticket->id,
+        ];
+
         $embed = [
             'title' => 'Ticket Closes',
             'color' => hexdec('22e629'), // Green
@@ -191,6 +198,12 @@ class TicketRepository
         ];
         $response = Http::discordBot()->post('/channels/'.$ticketConfig->transcript_channel_id.'/messages', [
             'embeds' => [$embed],
+            'components' => [
+                [
+                    'type' => 1,
+                    'components' => [$transcriptButton],
+                ],
+            ],
         ]);
 
         return $response->ok();
