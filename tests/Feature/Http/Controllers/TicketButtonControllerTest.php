@@ -28,14 +28,19 @@ test('can create ticket buttons', function () {
         'initial_message' => 'Test',
         'emoji' => '⚠️',
         'naming_scheme' => '%id%-Channel',
+        'ticket_button_ping_role_ids' => ['123', '456'],
     ];
 
     $this->actingAs($user)
         ->postJson(route('button.store'), $data)
         ->assertCreated()
-        ->assertJson(['data' => $data]);
+        ->assertJson(['data' => collect($data)->except('ticket_button_ping_role_ids')->toArray()]);
 
-    $this->assertDatabaseHas('ticket_buttons', $data);
+    $this->assertDatabaseHas('ticket_buttons', collect($data)->except('ticket_button_ping_role_ids')->toArray());
+
+    expect(TicketButton::count())->toBe(1);
+    dump(TicketButton::first()->ticketButtonPingRoles);
+    expect(TicketButton::first()->ticketButtonPingRoles->map(fn ($ticketButtonPingRole) => $ticketButtonPingRole->role_id)->toArray())->toBe(['123', '456']);
 });
 
 test('can update ticket buttons', function () {
@@ -51,14 +56,16 @@ test('can update ticket buttons', function () {
         'initial_message' => 'Test',
         'emoji' => '⚠️',
         'naming_scheme' => '%id%-Channel',
+        'ticket_button_ping_role_ids' => ['123', '456'],
     ];
 
     $this->actingAs($user)
         ->patchJson(route('button.update', $ticketButton), $data)
         ->assertOk()
-        ->assertJson(['data' => $data]);
+        ->assertJson(['data' => collect($data)->except('ticket_button_ping_role_ids')->toArray()]);
 
-    $this->assertDatabaseHas('ticket_buttons', $data);
+    $this->assertDatabaseHas('ticket_buttons', collect($data)->except('ticket_button_ping_role_ids')->toArray());
+    expect($ticketButton->ticketButtonPingRoles->map(fn ($ticketButtonPingRole) => $ticketButtonPingRole->role_id)->toArray())->toBe(['123', '456']);
 });
 
 test('can delete ticket buttons', function () {

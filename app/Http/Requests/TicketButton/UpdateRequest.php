@@ -30,6 +30,8 @@ class UpdateRequest extends FormRequest
             'initial_message' => 'required|string|max:1000',
             'emoji' => ['required', 'string', new EmojiRule],
             'naming_scheme' => 'required|string|max:128',
+            'ticket_button_ping_role_ids' => 'required|array',
+            'ticket_button_ping_role_ids.*' => 'string',
         ];
     }
 }

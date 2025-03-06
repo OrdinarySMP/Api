@@ -42,4 +42,12 @@ class TicketButton extends Model
     {
         return $this->hasMany(Ticket::class);
     }
+
+    /**
+     * @return HasMany<TicketButtonPingRole, $this>
+     */
+    public function ticketButtonPingRoles(): HasMany
+    {
+        return $this->hasMany(TicketButtonPingRole::class);
+    }
 }
