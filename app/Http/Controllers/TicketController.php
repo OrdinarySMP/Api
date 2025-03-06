@@ -55,7 +55,7 @@ class TicketController extends Controller
         $data = $request->validated();
         $ticket = $this->ticketRepository->createForButton($ticketButton, $data);
 
-        $this->ticketRepository->pingTeams($ticket);
+        $this->ticketRepository->pingRoles($ticket);
         $this->ticketRepository->sendInitialMessage($ticket);
 
         return new TicketResource($ticket);

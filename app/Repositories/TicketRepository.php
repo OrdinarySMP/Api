@@ -89,14 +89,18 @@ class TicketRepository
         return $ticket;
     }
 
-    public function pingTeams(Ticket $ticket): bool
+    public function pingRoles(Ticket $ticket): bool
     {
-        $teamOverrides = $ticket->ticketButton?->ticketTeam?->ticketTeamRoles->map(function ($ticketTeamRole) {
-            return '<@&'.$ticketTeamRole->role_id.'>';
+        $pingRoles = $ticket->ticketButton?->ticketButtonPingRoles->map(function ($ticketButtonPingRole) {
+            return '<@&'.$ticketButtonPingRole->role_id.'>';
         }) ?? collect();
 
+        if ($pingRoles->isEmpty()) {
+            return true;
+        }
+
         $pingResponse = Http::discordBot()->post('/channels/'.$ticket->channel_id.'/messages', [
-            'content' => $teamOverrides->join(', '),
+            'content' => $pingRoles->join(', '),
         ]);
 
         $deleteResponse = null;
