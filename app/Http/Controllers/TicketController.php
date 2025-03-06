@@ -30,6 +30,7 @@ class TicketController extends Controller
         }
         $tickets = QueryBuilder::for(Ticket::class)
             ->allowedIncludes(['ticketButton', 'ticketTranscripts'])
+            ->allowedSorts('created_at')
             ->allowedFilters([
                 AllowedFilter::exact('id'),
                 AllowedFilter::exact('state'),
