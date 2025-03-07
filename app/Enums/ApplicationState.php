@@ -4,8 +4,9 @@ namespace App\Enums;
 
 enum ApplicationState: int
 {
-    case Pending = 0;
-    case Accepted = 1;
-    case Denied = 2;
-    case InProgress = 3;
+    case InProgress = 0;
+    case Pending = 1;
+    case Accepted = 2;
+    case Denied = 3;
+    case Cancelled = 4;
 }

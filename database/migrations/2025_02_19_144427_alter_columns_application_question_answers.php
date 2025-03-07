@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('applications', function (Blueprint $table) {
-            $table->string('message_link')->nullable();
-            $table->string('handled_by', 20)->nullable();
+        Schema::table('application_question_answers', function (Blueprint $table) {
+            $table->text('answer')->change();
         });
     }
 
@@ -22,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('applications', function (Blueprint $table) {
-            $table->dropColumn(['message_link', 'handled_by']);
+        Schema::table('application_question_answers', function (Blueprint $table) {
+            $table->string('answer')->change();
         });
     }
 };
