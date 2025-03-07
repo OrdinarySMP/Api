@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Application;
+use App\Models\ApplicationSubmission;
 use App\Models\ApplicationQuestion;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -19,8 +19,8 @@ class ApplicationQuestionAnswerFactory extends Factory
     public function definition(): array
     {
         return [
-            'application_question_id' => ApplicationQuestion::factory()->create(),
-            'application_id' => Application::factory()->create(),
+            'application_question_id' => ApplicationQuestion::factory(),
+            'application_submission_id' => ApplicationSubmission::factory(),
             'answer' => fake()->sentence(2),
         ];
     }

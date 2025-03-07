@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\ApplicationState;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Application extends Model
 {
@@ -13,7 +13,27 @@ class Application extends Model
 
     protected $guarded = ['id', 'created_at', 'udpated_at'];
 
-    protected $casts = [
-        'state' => ApplicationState::class,
-    ];
+    /**
+     * @return HasMany<ApplicationRole, $this>
+     */
+    public function applicationRoles(): HasMany
+    {
+        return $this->hasMany(ApplicationRole::class);
+    }
+
+    /**
+     * @return HasMany<ApplicationQuestion, $this>
+     */
+    public function applicationQuestions(): HasMany
+    {
+        return $this->hasMany(ApplicationQuestion::class);
+    }
+
+    /**
+     * @return HasMany<ApplicationSubmission, $this>
+     */
+    public function applicationSubmissions(): HasMany
+    {
+        return $this->hasMany(ApplicationSubmission::class);
+    }
 }

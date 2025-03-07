@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum ApplicationState: int
+enum ApplicationSubmissionState: int
 {
     case InProgress = 0;
     case Pending = 1;

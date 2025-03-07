@@ -24,8 +24,9 @@ class ApplicationQuestionController extends Controller
             ->defaultSort('order')
             ->allowedSorts('order')
             ->allowedFilters([
-                AllowedFilter::exact('is_active'),
                 AllowedFilter::exact('id'),
+                AllowedFilter::exact('is_active'),
+                AllowedFilter::exact('application_id'),
             ])
             ->getOrPaginate();
 
