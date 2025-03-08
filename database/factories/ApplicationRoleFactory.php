@@ -3,12 +3,13 @@
 namespace Database\Factories;
 
 use App\Models\Application;
+use App\Enums\ApplicationRoleType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Faq>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ApplicationRole>
  */
-class ApplicationQuestionFactory extends Factory
+class ApplicationRoleFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -19,9 +20,8 @@ class ApplicationQuestionFactory extends Factory
     {
         return [
             'application_id' => Application::factory(),
-            'question' => fake()->sentence(1),
-            'order' => fake()->numberBetween(1, 100),
-            'is_active' => fake()->boolean(),
+            'role_id' => (string) fake()->numberBetween(100000000000000000, 999999999999999999),
+            'type' => fake()->randomElement(ApplicationRoleType::cases()),
         ];
     }
 }

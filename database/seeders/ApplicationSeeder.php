@@ -3,7 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Application;
+use App\Models\ApplicationSubmission;
 use App\Models\ApplicationQuestion;
+use App\Models\ApplicationRole;
 use App\Models\ApplicationQuestionAnswer;
 use App\Models\ApplicationResponse;
 use Illuminate\Database\Seeder;
@@ -15,9 +17,29 @@ class ApplicationSeeder extends Seeder
      */
     public function run(): void
     {
-        Application::factory(10)->create();
-        ApplicationQuestion::factory(10)->create();
-        ApplicationQuestionAnswer::factory(10)->create();
+        $applications = Application::factory(5)
+            ->has(
+                ApplicationQuestion::factory(5)
+            )
+            ->has(
+                ApplicationSubmission::factory(5)
+            )
+            ->has(
+                ApplicationRole::factory(10)
+            )
+            ->create();
+
+        $applications->each(function ($application) {
+            $application->applicationSubmissions->each(function ($submission) use ($application) {
+                $application->applicationQuestions->each(function ($question) use ($submission) {
+                    ApplicationQuestionAnswer::factory()->create([
+                        'application_question_id' => $question->id,
+                        'application_submission_id' => $submission->id,
+                    ]);
+                });
+            });
+        });
+
         ApplicationResponse::factory(10)->create();
     }
 }

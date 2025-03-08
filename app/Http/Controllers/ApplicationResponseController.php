@@ -22,7 +22,6 @@ class ApplicationResponseController extends Controller
         }
         $applicationResponse = QueryBuilder::for(ApplicationResponse::class)
             ->allowedFilters([
-                'question',
                 AllowedFilter::exact('id'),
             ])
             ->getOrPaginate();
