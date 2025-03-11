@@ -13,7 +13,7 @@ class StoreRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user() && $this->user()->can('application-submission.create');
     }
 
     /**

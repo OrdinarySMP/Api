@@ -114,4 +114,27 @@ class DiscordRepository
 
         return $user;
     }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getGuildMemberById(string $userId): array
+    {
+        $guildId = config('services.discord.server_id');
+        /**
+         * @var array<mixed>
+         */
+        $member = Cache::remember('discord-guild-'.$guildId.'-member-'.$userId, 60 * 60 * 24, function () use ($userId, $guildId) { // save for 1 days
+            $response = Http::discordBot()->get("/guilds/{$guildId}/members/{$userId}");
+
+            return $response->json();
+        });
+
+        if (! $member || ! array_key_exists('user', $member)) {
+            Cache::forget('discord-guild-'.$guildId.'-member-'.$userId);
+            throw new \Error("Could not find member for user id: {$userId}.");
+        }
+
+        return $member;
+    }
 }

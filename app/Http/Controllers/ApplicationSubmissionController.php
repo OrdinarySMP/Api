@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ApplicationSubmission\StoreRequest;
 use App\Http\Requests\ApplicationSubmission\UpdateRequest;
+use App\Http\Resources\ApplicationSubmissionResource;
 use App\Models\ApplicationSubmission;
-use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -14,12 +14,13 @@ class ApplicationSubmissionController extends Controller
 {
     /**
      * Display a listing of the resource.
-     *
-     * @return Collection<int, ApplicationSubmission>|LengthAwarePaginator<ApplicationSubmission>
      */
-    public function index(): Collection|LengthAwarePaginator
+    public function index(): AnonymousResourceCollection
     {
-        return QueryBuilder::for(ApplicationSubmission::class)
+        if (! request()->user()?->can('application-submission.read')) {
+            abort(403);
+        }
+        $applicationSubmissions = QueryBuilder::for(ApplicationSubmission::class)
             ->allowedFilters([
                 AllowedFilter::exact('id'),
                 AllowedFilter::exact('discord_id'),
@@ -27,24 +28,26 @@ class ApplicationSubmissionController extends Controller
                 AllowedFilter::exact('application_id'),
             ])
             ->getOrPaginate();
+
+        return ApplicationSubmissionResource::collection($applicationSubmissions);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): ApplicationSubmission
+    public function store(StoreRequest $request): ApplicationSubmissionResource
     {
-        return ApplicationSubmission::create($request->validated());
+        return new ApplicationSubmissionResource(ApplicationSubmission::create($request->validated()));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, ApplicationSubmission $applicationSubmission): ApplicationSubmission
+    public function update(UpdateRequest $request, ApplicationSubmission $applicationSubmission): ApplicationSubmissionResource
     {
         $applicationSubmission->update($request->validated());
 
-        return $applicationSubmission->refresh();
+        return new ApplicationSubmissionResource($applicationSubmission->refresh());
     }
 
     /**
@@ -52,6 +55,10 @@ class ApplicationSubmissionController extends Controller
      */
     public function destroy(ApplicationSubmission $applicationSubmission): bool
     {
+        if (! request()->user()?->can('application-submission.delete')) {
+            abort(403);
+        }
+
         return $applicationSubmission->delete() ?? false;
     }
 }

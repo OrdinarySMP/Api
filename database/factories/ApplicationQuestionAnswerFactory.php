@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\ApplicationSubmission;
 use App\Models\ApplicationQuestion;
+use App\Models\ApplicationSubmission;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

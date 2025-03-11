@@ -3,11 +3,11 @@
 namespace Database\Seeders;
 
 use App\Models\Application;
-use App\Models\ApplicationSubmission;
 use App\Models\ApplicationQuestion;
-use App\Models\ApplicationRole;
 use App\Models\ApplicationQuestionAnswer;
 use App\Models\ApplicationResponse;
+use App\Models\ApplicationRole;
+use App\Models\ApplicationSubmission;
 use Illuminate\Database\Seeder;
 
 class ApplicationSeeder extends Seeder

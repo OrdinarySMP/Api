@@ -23,7 +23,7 @@ class ApplicationController extends Controller
         $applications = QueryBuilder::for(Application::class)
             ->allowedFilters([
                 AllowedFilter::exact('id'),
-                'name'
+                'name',
             ])
             ->getOrPaginate();
 
@@ -36,7 +36,8 @@ class ApplicationController extends Controller
     public function store(StoreRequest $request): ApplicationResource
     {
         abort(503);
-        return new ApplicationResource(Application::create($request->validated()));
+
+        // return new ApplicationResource(Application::create($request->validated()));
     }
 
     /**

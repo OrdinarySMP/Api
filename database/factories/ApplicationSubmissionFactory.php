@@ -24,7 +24,8 @@ class ApplicationSubmissionFactory extends Factory
             'application_response_id' => ApplicationResponse::factory()->create(),
             'state' => fake()->randomElement(ApplicationSubmissionState::cases()),
             'custom_response' => fake()->optional()->sentence(2),
-            'message_link' => fake()->optional()->url(),
+            'message_id' => (string) fake()->numberBetween(100000000000000000, 999999999999999999),
+            'channel_id' => (string) fake()->numberBetween(100000000000000000, 999999999999999999),
             'handled_by' => fake()->optional()->numberBetween(100000000000000000, 999999999999999999),
         ];
     }

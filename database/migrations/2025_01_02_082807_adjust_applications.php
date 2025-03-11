@@ -16,7 +16,8 @@ return new class extends Migration
         Schema::rename('applications', 'application_submissions');
 
         Schema::table('application_submissions', function (Blueprint $table) {
-            $table->string('message_link')->nullable();
+            $table->string('message_id', 20)->nullable();
+            $table->string('channel_id', 20)->nullable();
             $table->string('handled_by', 20)->nullable();
             $table->foreignIdFor(Application::class)->nullable();
         });
@@ -59,7 +60,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('application_submissions', function (Blueprint $table) {
-            $table->dropColumn(['message_link', 'handled_by', 'application_id']);
+            $table->dropColumn(['message_id', 'channel_id', 'handled_by', 'application_id']);
         });
 
         Schema::table('application_question_answers', function (Blueprint $table) {

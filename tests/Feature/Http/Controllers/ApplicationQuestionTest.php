@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Application;
 use App\Models\ApplicationQuestion;
 use App\Models\User;
 
@@ -15,10 +16,12 @@ test('auth user can get application question', function () {
 
 test('can create application question', function () {
     $user = User::factory()->owner()->create();
+    $application = Application::factory()->create();
     $data = [
         'question' => 'Test',
         'order' => 1,
         'is_active' => true,
+        'application_id' => $application->id,
     ];
 
     $this->actingAs($user)
@@ -32,10 +35,12 @@ test('can create application question', function () {
 test('can update application question', function () {
     $user = User::factory()->owner()->create();
     $applicationQuestion = ApplicationQuestion::factory()->create();
+    $application = Application::factory()->create();
     $data = [
         'question' => 'Test',
         'order' => 1,
         'is_active' => true,
+        'application_id' => $application->id,
     ];
 
     $this->actingAs($user)

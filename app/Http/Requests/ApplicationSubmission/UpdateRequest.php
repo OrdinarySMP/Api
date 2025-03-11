@@ -13,7 +13,7 @@ class UpdateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->user() && $this->user()->can('application-submission.edit');
     }
 
     /**
@@ -31,6 +31,7 @@ class UpdateRequest extends FormRequest
             'custom_response' => 'nullable|string',
             'message_link' => 'nullable|string|url:https',
             'handled_by' => 'nullable|string|size:18',
+            'application_id' => 'nullable|exists:applications,id',
         ];
     }
 }

@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\ApplicationSubmission;
 use App\Models\ApplicationQuestion;
 use App\Models\ApplicationQuestionAnswer;
+use App\Models\ApplicationSubmission;
 use App\Models\User;
 
 test('auth user can get application question answer', function () {

@@ -1,8 +1,9 @@
 <?php
 
 use App\Enums\ApplicationSubmissionState;
-use App\Models\ApplicationSubmission;
+use App\Models\Application;
 use App\Models\ApplicationResponse;
+use App\Models\ApplicationSubmission;
 use App\Models\User;
 
 test('auth user can get application submission', function () {
@@ -18,6 +19,7 @@ test('auth user can get application submission', function () {
 test('can create application submission', function () {
     $user = User::factory()->owner()->create();
     $applicationResponse = ApplicationResponse::factory()->create();
+    $application = Application::factory()->create();
     $data = [
         'discord_id' => '123123123123123123',
         'submitted_at' => '2024-12-24 12:00:00',
@@ -26,6 +28,7 @@ test('can create application submission', function () {
         'custom_response' => 'Test',
         'message_link' => 'https://example.com',
         'handled_by' => '123123123123123123',
+        'application_id' => $application->id,
     ];
 
     $this->actingAs($user)
@@ -36,11 +39,11 @@ test('can create application submission', function () {
     $this->assertDatabaseHas('application_submissions', $data);
 });
 
-
 test('can update application submission', function () {
     $user = User::factory()->owner()->create();
     $applicationSubmission = ApplicationSubmission::factory()->create();
     $applicationResponse = ApplicationResponse::factory()->create();
+    $application = Application::factory()->create();
     $data = [
         'discord_id' => '123123123123123123',
         'submitted_at' => '2024-12-24 12:00:00',
@@ -49,6 +52,7 @@ test('can update application submission', function () {
         'custom_response' => 'Test',
         'message_link' => 'https://example.com',
         'handled_by' => '123123123123123123',
+        'application_id' => $application->id,
     ];
 
     $this->actingAs($user)

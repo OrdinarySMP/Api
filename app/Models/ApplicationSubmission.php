@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Enums\ApplicationSubmissionState;
+use App\Observers\ApplicationSubmissionObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[ObservedBy([ApplicationSubmissionObserver::class])]
 class ApplicationSubmission extends Model
 {
     /** @use HasFactory<\Database\Factories\ApplicationSubmissionFactory> */
@@ -33,5 +36,13 @@ class ApplicationSubmission extends Model
     public function applicationResponse(): BelongsTo
     {
         return $this->belongsTo(ApplicationResponse::class);
+    }
+
+    /**
+     * @return BelongsTo<Application, $this>
+     */
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
     }
 }
