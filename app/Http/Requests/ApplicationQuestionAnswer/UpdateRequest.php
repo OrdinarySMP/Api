@@ -25,6 +25,7 @@ class UpdateRequest extends FormRequest
             'application_question_id' => 'required|exists:application_questions,id',
             'application_submission_id' => 'required|exists:application_submissions,id',
             'answer' => 'required|string',
+            'attachments' => 'nullable|string',
         ];
     }
 }

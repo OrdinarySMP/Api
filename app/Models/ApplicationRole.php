@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ApplicationRoleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,6 +13,10 @@ class ApplicationRole extends Model
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'udpated_at'];
+
+    protected $casts = [
+        'type' => ApplicationRoleType::class,
+    ];
 
     /**
      * @return BelongsTo<Application, $this>

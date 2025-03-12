@@ -21,6 +21,7 @@ class ApplicationController extends Controller
             abort(403);
         }
         $applications = QueryBuilder::for(Application::class)
+            ->allowedIncludes(['restrictedRoles'])
             ->allowedFilters([
                 AllowedFilter::exact('id'),
                 'name',

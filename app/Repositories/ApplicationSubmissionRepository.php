@@ -4,34 +4,40 @@ namespace App\Repositories;
 
 use App\Enums\ApplicationSubmissionState;
 use App\Enums\DiscordButton;
+use App\Models\ApplicationResponse;
 use App\Models\ApplicationSubmission;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class ApplicationSubmissionRepository
 {
     public function sendApplicationSubmission(ApplicationSubmission $applicationSubmission): bool
     {
-        $member = $this->getMember($applicationSubmission);
+        $pingRoles = $applicationSubmission->application?->pingRoles->map(fn ($pingRole) => "<@&$pingRole->role_id>")->join(', ') ?? '';
 
         $response = Http::discordBot()
             ->post(
-                '/channels/'.$applicationSubmission->application->log_channel.'/messages',
-                $this->getMessageData($applicationSubmission)
-            )->throw();
+                '/channels/'.$applicationSubmission->application?->log_channel.'/messages',
+                [
+                    'content' => $pingRoles,
+                    ...$this->getMessageData($applicationSubmission),
+                ]
+            );
         $data = $response->json();
 
         $applicationSubmission->message_id = $data['id'];
         $applicationSubmission->channel_id = $data['channel_id'];
         $applicationSubmission->saveQuietly();
 
-        $response = Http::discordBot()
-            ->post(
-                "/channels/{$applicationSubmission->channel_id}/messages/{$applicationSubmission->message_id}/threads",
-                [
-                    'name' => "{$applicationSubmission->application->name} - {$member['user']['username']}",
-                ]
-            );
+        $this->createThread($applicationSubmission);
+
+        $discordRepository = new DiscordRepository;
+        $applicationSubmission->application?->pendingRoles
+            ->each(function ($addRole) use ($applicationSubmission, $discordRepository) {
+                $reason = "Application {$applicationSubmission->application?->name}";
+                $discordRepository->addRoleToMember($addRole->role_id, $applicationSubmission->discord_id, $reason);
+            });
 
         return $response->ok();
     }
@@ -44,10 +50,15 @@ class ApplicationSubmissionRepository
             default => 'handled',
         };
         $responseSent = $this->sendResponseToUser($applicationSubmission, $action);
-        $message = "<@{$applicationSubmission->handled_by}> {$action} <@{$applicationSubmission->discord_id}>\`s application for: `{$applicationSubmission->application->name}`";
+        $roleResult = $this->handleRoles($applicationSubmission);
+        $message = "<@{$applicationSubmission->handled_by}> {$action} <@{$applicationSubmission->discord_id}>\`s application for: `{$applicationSubmission->application?->name}`";
         if (! $responseSent) {
-            $message += "\n\n Unable to contact <@{$applicationSubmission->discord_id}>.";
+            $message .= "\n\nUnable to contact <@{$applicationSubmission->discord_id}>.";
         }
+        if ($roleResult) {
+            $message .= "\n\n{$roleResult}";
+        }
+
         $response = Http::discordBot()
             ->patch(
                 '/channels/'.$applicationSubmission->channel_id.'/messages/'.$applicationSubmission->message_id,
@@ -61,7 +72,39 @@ class ApplicationSubmissionRepository
     }
 
     /**
-     * @return array{embeds:array<mixed>,componentes:array<mixed>}
+     * @return array{
+     *         embeds: array<array{
+     *             title: string,
+     *             fields: array{array{
+     *                 name: string,
+     *                 value: string
+     *             }},
+     *             timestamp: string,
+     *             color: string,
+     *             thumbnail: array{url: string}
+     *         }>,
+     *         components: \Illuminate\Support\Collection<
+     *             int,
+     *             non-empty-array{
+     *                 type?: int,
+     *                 components?: array<array{
+     *                     type: int,
+     *                     custom_id: string,
+     *                     style: DiscordButton,
+     *                     label: string
+     *                 }>
+     *            }|non-empty-array{
+     *                type?: int,
+     *                components?: array<array{
+     *                    type: int,
+     *                    custom_id: string,
+     *                    options: array<array{label:string, value:string, description:string}>,
+     *                    placeholder: string,
+     *                    min_values: int,
+     *                    max_values: int,
+     *                }>
+     *            }>
+     *        }
      */
     private function getMessageData(ApplicationSubmission $applicationSubmission): array
     {
@@ -72,7 +115,9 @@ class ApplicationSubmissionRepository
 
         $embed = $this->getSubmissionEmbed($applicationSubmission);
         $buttonActionRow = $this->getButtonsActionRow($applicationSubmission);
-        $components = collect([$buttonActionRow])->filter(fn ($component) => ! empty($component));
+        $acceptActionRow = $this->getAcceptActionRow($applicationSubmission);
+        $denyActionRow = $this->getDenyActionRow($applicationSubmission);
+        $components = collect([$buttonActionRow, $acceptActionRow, $denyActionRow])->filter(fn ($component) => ! empty($component));
 
         return [
             'embeds' => [$embed],
@@ -81,7 +126,16 @@ class ApplicationSubmissionRepository
     }
 
     /**
-     * @return array<array{name:string, value:string}>
+     * @return array{
+     *         title: string,
+     *         fields: array{array{
+     *             name: string,
+     *             value: string
+     *         }},
+     *         timestamp: string,
+     *         color: string,
+     *         thumbnail: array{url: string}
+     *        }
      */
     private function getSubmissionEmbed(ApplicationSubmission $applicationSubmission): array
     {
@@ -89,8 +143,18 @@ class ApplicationSubmissionRepository
         $statsField = $this->getStatsField($applicationSubmission, $member);
         $tooLongField = $this->getTooLongField();
         $applicationQuestionAnswers = $applicationSubmission->applicationQuestionAnswers;
+        $title = "{$member['user']['global_name']}`s application for {$applicationSubmission->application?->name}";
+
         if ($applicationQuestionAnswers->count() > 25) {
-            return [$tooLongField, $statsField];
+            return [
+                'title' => $title,
+                'fields' => [$tooLongField, $statsField],
+                'timestamp' => now()->toIso8601String(),
+                'color' => $this->getEmbedColor($applicationSubmission),
+                'thumbnail' => [
+                    'url' => "https://cdn.discordapp.com/avatars/{$member['user']['id']}/{$member['user']['avatar']}.png",
+                ],
+            ];
         }
 
         $totalLenght = 0;
@@ -100,7 +164,7 @@ class ApplicationSubmissionRepository
             $answer = strlen($applicationQuestionAnswer->answer) < 1024 ?
                 $applicationQuestionAnswer->answer :
                 'This answer is too long. Please view in the helper panel.';
-            $question = $applicationQuestionAnswer->applicationQuestion->question;
+            $question = $applicationQuestionAnswer->applicationQuestion->question ?? '';
 
             $totalLenght += strlen($answer);
             $totalLenght += strlen($question);
@@ -116,11 +180,18 @@ class ApplicationSubmissionRepository
 
         $fields[] = $statsField;
 
-        $title = "{$member['user']['global_name']}`s application for {$applicationSubmission->application->name}";
         $totalLenght += strlen($title);
 
         if ($totalLenght > 6000) {
-            return [$tooLongField, $statsField];
+            return [
+                'title' => $title,
+                'fields' => [$tooLongField, $statsField],
+                'timestamp' => now()->toIso8601String(),
+                'color' => $this->getEmbedColor($applicationSubmission),
+                'thumbnail' => [
+                    'url' => "https://cdn.discordapp.com/avatars/{$member['user']['id']}/{$member['user']['avatar']}.png",
+                ],
+            ];
         }
 
         return [
@@ -146,7 +217,7 @@ class ApplicationSubmissionRepository
 
     public function getEmbedColor(ApplicationSubmission $applicationSubmission): string
     {
-        return match ($applicationSubmission->state) {
+        return (string) match ($applicationSubmission->state) {
             ApplicationSubmissionState::Accepted => hexdec('0dff00'),
             ApplicationSubmissionState::Denied => hexdec('ff0019'),
             default => hexdec('ffcc00'),
@@ -163,7 +234,7 @@ class ApplicationSubmissionRepository
             ->where('application_id', $applicationSubmission->application_id)
             ->count();
         $joinedAt = Carbon::parse($member['joined_at'])->timestamp;
-        $duration = $applicationSubmission->created_at->diffForHumans(now(), ['parts' => 2]);
+        $duration = now()->diffForHumans($applicationSubmission->created_at, \Carbon\CarbonInterface::DIFF_ABSOLUTE);
         $stats =
             "**User ID:** {$applicationSubmission->discord_id}\n".
             "**Username:** {$member['user']['username']}\n".
@@ -192,11 +263,11 @@ class ApplicationSubmissionRepository
 
     /**
      * @return array{
-     *     type: int,
-     *     components: array<array{
+     *     type?: int,
+     *     components?: array<array{
      *         type: int,
      *         custom_id: string,
-     *         style: int,
+     *         style: DiscordButton,
      *         label: string
      *     }>
      * }
@@ -206,32 +277,52 @@ class ApplicationSubmissionRepository
         if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
             return [];
         }
-        $acceptButton = [
+        $buttons = collect();
+        $buttons->push([
             'type' => 2, // button
             'custom_id' => 'applicationSubmission-accept-'.$applicationSubmission->id,
             'style' => DiscordButton::Success,
             'label' => 'Accept',
-        ];
-        $closeButton = [
+        ]);
+        $buttons->push([
             'type' => 2, // button
             'custom_id' => 'applicationSubmission-deny-'.$applicationSubmission->id,
             'style' => DiscordButton::Danger,
             'label' => 'Deny',
-        ];
+        ]);
+        $buttons->push([
+            'type' => 2, // button
+            'custom_id' => 'applicationSubmission-acceptWithReason-'.$applicationSubmission->id,
+            'style' => DiscordButton::Success,
+            'label' => 'Accept with reason',
+        ]);
+        $buttons->push([
+            'type' => 2, // button
+            'custom_id' => 'applicationSubmission-denyWithReason-'.$applicationSubmission->id,
+            'style' => DiscordButton::Danger,
+            'label' => 'Deny with reason',
+        ]);
 
         return [
             'type' => 1,
-            'components' => [$acceptButton, $closeButton],
+            'components' => $buttons->toArray(),
         ];
     }
 
     private function sendResponseToUser(ApplicationSubmission $applicationSubmission, string $action): bool
     {
-        $message = match ($applicationSubmission->state) {
-            ApplicationSubmissionState::Accepted => $applicationSubmission->application->accept_message,
-            ApplicationSubmissionState::Denied => $applicationSubmission->application->deny_message,
-            default => null,
-        };
+        if ($applicationSubmission->applicationResponse) {
+            $message = $applicationSubmission->applicationResponse->response;
+        } elseif ($applicationSubmission->custom_response) {
+            $message = $applicationSubmission->custom_response;
+        } else {
+            $message = match ($applicationSubmission->state) {
+                ApplicationSubmissionState::Accepted => $applicationSubmission->application?->accept_message,
+                ApplicationSubmissionState::Denied => $applicationSubmission->application?->deny_message,
+                default => null,
+            };
+        }
+
         if (! $message) {
             return false;
         }
@@ -242,10 +333,9 @@ class ApplicationSubmissionRepository
         }
         $channel = $channelResponse->json();
         $channelResponse = Http::discordBot()->post('/channels/'.$channel['id'].'/messages', [
-            'content' => $message,
             'embeds' => [
                 [
-                    'title' => "Your application for `{$applicationSubmission->application->name}` has been {$action}",
+                    'title' => "Your application for `{$applicationSubmission->application?->name}` has been {$action}",
                     'description' => $message,
                     'color' => $this->getEmbedColor($applicationSubmission),
                 ],
@@ -253,5 +343,147 @@ class ApplicationSubmissionRepository
         ]);
 
         return $channelResponse->ok();
+    }
+
+    private function handleRoles(ApplicationSubmission $applicationSubmission): string
+    {
+        $discordRepository = new DiscordRepository;
+
+        $addRoles = match ($applicationSubmission->state) {
+            ApplicationSubmissionState::Accepted => $applicationSubmission->application?->acceptedRoles,
+            ApplicationSubmissionState::Denied => $applicationSubmission->application?->deniedRoles,
+            default => null,
+        } ?? collect();
+        $removeRoles = match ($applicationSubmission->state) {
+            ApplicationSubmissionState::Accepted => $applicationSubmission->application?->acceptRemovalRoles,
+            ApplicationSubmissionState::Denied => $applicationSubmission->application?->denyRemovalRoles,
+            default => null,
+        } ?? collect();
+
+        $removeRoles = $removeRoles->merge($applicationSubmission->application->pendingRoles ?? collect());
+
+        $addResult = $addRoles->map(function ($addRole) use ($applicationSubmission, $discordRepository) {
+            $reason = "Application {$applicationSubmission->application?->name}";
+            $result = $discordRepository->addRoleToMember($addRole->role_id, $applicationSubmission->discord_id, $reason);
+            if (! $result) {
+                return "Could not add role <@&{$addRole->role_id}>.";
+            }
+
+            return '';
+        })->collect();
+
+        $removeResult = $removeRoles->map(function ($addRole) use ($applicationSubmission, $discordRepository) {
+            $reason = "Application {$applicationSubmission->application?->name}";
+            $result = $discordRepository->removeRoleFromMember($addRole->role_id, $applicationSubmission->discord_id, $reason);
+            if (! $result) {
+                return "Could not remove role <@&{$addRole->role_id}>.";
+            }
+
+            return '';
+        })->collect();
+
+        return $addResult->merge($removeResult)
+            ->filter(fn ($result) => $result !== '')
+            ->join("\n");
+    }
+
+    private function createThread(ApplicationSubmission $applicationSubmission): void
+    {
+        $member = $this->getMember($applicationSubmission);
+        $threadResponse = Http::discordBot()
+            ->post(
+                "/channels/{$applicationSubmission->channel_id}/messages/{$applicationSubmission->message_id}/threads",
+                [
+                    'name' => "{$applicationSubmission->application?->name} - {$member['user']['username']}",
+                ]
+            );
+        $thread = $threadResponse->json();
+        $applicationSubmission->applicationQuestionAnswers
+            ->each(function ($applicationQuestionAnswer) use ($thread) {
+                if (! $applicationQuestionAnswer->attachments) {
+                    return;
+                }
+                Http::discordBot()
+                    ->post(
+                        '/channels/'.$thread['id'].'/messages',
+                        [
+                            'content' => "**{$applicationQuestionAnswer->applicationQuestion?->question}**\n{$applicationQuestionAnswer->attachments}",
+                        ]
+                    );
+            });
+    }
+
+    /**
+     * @return array{
+     *     type?: int,
+     *     components?: array<array{
+     *         type: int,
+     *         custom_id: string,
+     *         options: array<array{label:string, value:string, description:string}>,
+     *         placeholder: string,
+     *         min_values: int,
+     *         max_values: int,
+     *     }>
+     * }
+     */
+    private function getAcceptActionRow(ApplicationSubmission $applicationSubmission): array
+    {
+        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
+            return [];
+        }
+        $options = ApplicationResponse::accepted()->limit(25)->get()->map(fn ($response) => [
+            'label' => $response->name,
+            'value' => "{$response->id}",
+            'description' => Str::limit($response->response, 90),
+        ]);
+
+        return [
+            'type' => 1,
+            'components' => [[
+                'type' => 3,
+                'custom_id' => "applicationSubmission-acceptTemplate-{$applicationSubmission->id}",
+                'options' => $options->toArray(),
+                'placeholder' => 'Accept template',
+                'min_values' => 1,
+                'max_values' => 1,
+            ]],
+        ];
+    }
+
+    /**
+     * @return array{
+     *     type?: int,
+     *     components?: array<array{
+     *         type: int,
+     *         custom_id: string,
+     *         options: array<array{label:string, value:string, description:string}>,
+     *         placeholder: string,
+     *         min_values: int,
+     *         max_values: int,
+     *     }>
+     * }
+     */
+    private function getDenyActionRow(ApplicationSubmission $applicationSubmission): array
+    {
+        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
+            return [];
+        }
+        $options = ApplicationResponse::denied()->limit(25)->get()->map(fn ($response) => [
+            'label' => $response->name,
+            'value' => "{$response->id}",
+            'description' => Str::limit($response->response, 90),
+        ]);
+
+        return [
+            'type' => 1,
+            'components' => [[
+                'type' => 3,
+                'custom_id' => "applicationSubmission-denyTemplate-{$applicationSubmission->id}",
+                'options' => $options->toArray(),
+                'placeholder' => 'Deny templates',
+                'min_values' => 1,
+                'max_values' => 1,
+            ]],
+        ];
     }
 }

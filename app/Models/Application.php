@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ApplicationRoleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -67,5 +68,61 @@ class Application extends Model
     public function applicationSubmissions(): HasMany
     {
         return $this->hasMany(ApplicationSubmission::class);
+    }
+
+    /**
+     * @return HasMany<ApplicationRole, $this>
+     */
+    public function restrictedRoles(): HasMany
+    {
+        return $this->applicationRoles()->where('type', ApplicationRoleType::Restricted);
+    }
+
+    /**
+     * @return HasMany<ApplicationRole, $this>
+     */
+    public function acceptedRoles(): HasMany
+    {
+        return $this->applicationRoles()->where('type', ApplicationRoleType::Accepted);
+    }
+
+    /**
+     * @return HasMany<ApplicationRole, $this>
+     */
+    public function deniedRoles(): HasMany
+    {
+        return $this->applicationRoles()->where('type', ApplicationRoleType::Denied);
+    }
+
+    /**
+     * @return HasMany<ApplicationRole, $this>
+     */
+    public function pingRoles(): HasMany
+    {
+        return $this->applicationRoles()->where('type', ApplicationRoleType::Ping);
+    }
+
+    /**
+     * @return HasMany<ApplicationRole, $this>
+     */
+    public function acceptRemovalRoles(): HasMany
+    {
+        return $this->applicationRoles()->where('type', ApplicationRoleType::AcceptRemoval);
+    }
+
+    /**
+     * @return HasMany<ApplicationRole, $this>
+     */
+    public function denyRemovalRoles(): HasMany
+    {
+        return $this->applicationRoles()->where('type', ApplicationRoleType::DenyRemoval);
+    }
+
+    /**
+     * @return HasMany<ApplicationRole, $this>
+     */
+    public function pendingRoles(): HasMany
+    {
+        return $this->applicationRoles()->where('type', ApplicationRoleType::Pending);
     }
 }

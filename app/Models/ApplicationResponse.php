@@ -39,4 +39,14 @@ class ApplicationResponse extends Model
     protected $casts = [
         'type' => ApplicationResponseType::class,
     ];
+
+    public function scopeAccepted(): void
+    {
+        $this->where('type', ApplicationResponseType::Accepted);
+    }
+
+    public function scopeDenied(): void
+    {
+        $this->where('type', ApplicationResponseType::Denied);
+    }
 }

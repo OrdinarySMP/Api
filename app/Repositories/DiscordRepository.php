@@ -137,4 +137,32 @@ class DiscordRepository
 
         return $member;
     }
+
+    public function addRoleToMember(string $roleId, string $userId, ?string $reason = null): bool
+    {
+        $guildId = config('services.discord.server_id');
+        $request = Http::discordBot();
+        if ($reason) {
+            $request = $request->withHeaders([
+                'X-Audit-Log-Reason' => $reason,
+            ]);
+        }
+        $response = $request->put("/guilds/{$guildId}/members/{$userId}/roles/{$roleId}");
+
+        return $response->noContent();
+    }
+
+    public function removeRoleFromMember(string $roleId, string $userId, ?string $reason = null): bool
+    {
+        $guildId = config('services.discord.server_id');
+        $request = Http::discordBot();
+        if ($reason) {
+            $request = $request->withHeaders([
+                'X-Audit-Log-Reason' => $reason,
+            ]);
+        }
+        $response = $request->delete("/guilds/{$guildId}/members/{$userId}/roles/{$roleId}");
+
+        return $response->noContent();
+    }
 }

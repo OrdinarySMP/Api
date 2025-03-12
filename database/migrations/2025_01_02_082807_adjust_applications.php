@@ -30,6 +30,7 @@ return new class extends Migration
             $table->dropColumn(['application_id']);
             $table->foreignIdFor(ApplicationSubmission::class);
             $table->text('answer')->change();
+            $table->text('attachments')->nullable();
         });
 
         Schema::create('applications', function (Blueprint $table) {
