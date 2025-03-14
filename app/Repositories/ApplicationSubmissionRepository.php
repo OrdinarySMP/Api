@@ -4,7 +4,6 @@ namespace App\Repositories;
 
 use App\Enums\ApplicationSubmissionState;
 use App\Enums\DiscordButton;
-use App\Models\ApplicationResponse;
 use App\Models\ApplicationSubmission;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -51,12 +50,21 @@ class ApplicationSubmissionRepository
         };
         $responseSent = $this->sendResponseToUser($applicationSubmission, $action);
         $roleResult = $this->handleRoles($applicationSubmission);
+
         $message = "<@{$applicationSubmission->handled_by}> {$action} <@{$applicationSubmission->discord_id}>\`s application for: `{$applicationSubmission->application?->name}`";
+
         if (! $responseSent) {
             $message .= "\n\nUnable to contact <@{$applicationSubmission->discord_id}>.";
         }
+
         if ($roleResult) {
             $message .= "\n\n{$roleResult}";
+        }
+
+        if ($applicationSubmission->applicationResponse) {
+            $message .= "\n\nTemplate: `{$applicationSubmission->applicationResponse->name}`";
+        } elseif ($applicationSubmission->custom_response) {
+            $message .= "\n\nReason provided:\n```{$applicationSubmission->custom_response}```";
         }
 
         $response = Http::discordBot()
@@ -431,11 +439,11 @@ class ApplicationSubmissionRepository
         if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
             return [];
         }
-        $options = ApplicationResponse::accepted()->limit(25)->get()->map(fn ($response) => [
+        $options = $applicationSubmission->application?->acceptedResponses()->limit(25)->get()->map(fn ($response) => [
             'label' => $response->name,
             'value' => "{$response->id}",
             'description' => Str::limit($response->response, 90),
-        ]);
+        ]) ?? collect();
 
         return [
             'type' => 1,
@@ -468,11 +476,11 @@ class ApplicationSubmissionRepository
         if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
             return [];
         }
-        $options = ApplicationResponse::denied()->limit(25)->get()->map(fn ($response) => [
+        $options = $applicationSubmission->application?->deniedResponses()->limit(25)->get()->map(fn ($response) => [
             'label' => $response->name,
             'value' => "{$response->id}",
             'description' => Str::limit($response->response, 90),
-        ]);
+        ]) ?? collect();
 
         return [
             'type' => 1,

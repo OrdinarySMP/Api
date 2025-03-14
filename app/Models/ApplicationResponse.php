@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Enums\ApplicationResponseType;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -40,13 +42,27 @@ class ApplicationResponse extends Model
         'type' => ApplicationResponseType::class,
     ];
 
-    public function scopeAccepted(): void
+    /**
+     * @return BelongsTo<Application, $this>
+     */
+    public function application(): BelongsTo
     {
-        $this->where('type', ApplicationResponseType::Accepted);
+        return $this->belongsTo(Application::class);
     }
 
-    public function scopeDenied(): void
+    /**
+     * @param  Builder<ApplicationResponse>  $query
+     */
+    public function scopeAccepted(Builder $query): void
     {
-        $this->where('type', ApplicationResponseType::Denied);
+        $query->where('type', ApplicationResponseType::Accepted);
+    }
+
+    /**
+     * @param  Builder<ApplicationResponse>  $query
+     */
+    public function scopeDenied(Builder $query): void
+    {
+        $query->where('type', ApplicationResponseType::Denied);
     }
 }

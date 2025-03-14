@@ -5,6 +5,7 @@ namespace App\Repositories;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class DiscordRepository
 {
@@ -131,6 +132,7 @@ class DiscordRepository
         });
 
         if (! $member || ! array_key_exists('user', $member)) {
+            Log::error("Could not find member for user id: {$userId}.", $member);
             Cache::forget('discord-guild-'.$guildId.'-member-'.$userId);
             throw new \Error("Could not find member for user id: {$userId}.");
         }

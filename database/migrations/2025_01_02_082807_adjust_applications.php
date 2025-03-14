@@ -26,6 +26,10 @@ return new class extends Migration
             $table->foreignIdFor(Application::class);
         });
 
+        Schema::table('application_responses', function (Blueprint $table) {
+            $table->foreignIdFor(Application::class);
+        });
+
         Schema::table('application_question_answers', function (Blueprint $table) {
             $table->dropColumn(['application_id']);
             $table->foreignIdFor(ApplicationSubmission::class);
@@ -68,6 +72,14 @@ return new class extends Migration
             $table->dropColumn(['application_submission_id']);
             $table->foreignIdFor(Application::class);
             $table->string('answer')->change();
+        });
+
+        Schema::table('application_questions', function (Blueprint $table) {
+            $table->dropColumn(['application_id']);
+        });
+
+        Schema::table('application_responses', function (Blueprint $table) {
+            $table->dropColumn(['application_id']);
         });
 
         Schema::dropIfExists('applications');

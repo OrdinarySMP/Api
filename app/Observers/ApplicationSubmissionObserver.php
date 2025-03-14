@@ -17,7 +17,12 @@ class ApplicationSubmissionObserver
      */
     public function created(ApplicationSubmission $applicationSubmission): void
     {
-        //
+        ApplicationSubmission::withoutEvents(function () use ($applicationSubmission) {
+            ApplicationSubmission::where('discord_id', $applicationSubmission->discord_id)
+                ->where('state', ApplicationSubmissionState::InProgress)
+                ->where('id', '!=', $applicationSubmission->id)
+                ->update(['state' => ApplicationSubmissionState::Cancelled]);
+        });
     }
 
     /**

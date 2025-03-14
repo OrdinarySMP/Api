@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ApplicationResponseType;
 use App\Enums\ApplicationRoleType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -47,14 +48,6 @@ class Application extends Model
     protected $guarded = ['id', 'created_at', 'udpated_at'];
 
     /**
-     * @return HasMany<ApplicationRole, $this>
-     */
-    public function applicationRoles(): HasMany
-    {
-        return $this->hasMany(ApplicationRole::class);
-    }
-
-    /**
      * @return HasMany<ApplicationQuestion, $this>
      */
     public function applicationQuestions(): HasMany
@@ -68,6 +61,38 @@ class Application extends Model
     public function applicationSubmissions(): HasMany
     {
         return $this->hasMany(ApplicationSubmission::class);
+    }
+
+    /**
+     * @return HasMany<ApplicationResponse, $this>
+     */
+    public function applicationResponses(): HasMany
+    {
+        return $this->hasMany(ApplicationResponse::class);
+    }
+
+    /**
+     * @return HasMany<ApplicationResponse, $this>
+     */
+    public function acceptedResponses(): HasMany
+    {
+        return $this->applicationResponses()->where('type', ApplicationResponseType::Accepted);
+    }
+
+    /**
+     * @return HasMany<ApplicationResponse, $this>
+     */
+    public function deniedResponses(): HasMany
+    {
+        return $this->applicationResponses()->where('type', ApplicationResponseType::Denied);
+    }
+
+    /**
+     * @return HasMany<ApplicationRole, $this>
+     */
+    public function applicationRoles(): HasMany
+    {
+        return $this->hasMany(ApplicationRole::class);
     }
 
     /**

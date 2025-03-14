@@ -21,11 +21,14 @@ class ApplicationSeeder extends Seeder
             ->has(
                 ApplicationQuestion::factory(5)
             )
-            ->has(
-                ApplicationSubmission::factory(5)
-            )
+            // ->has(
+            //     ApplicationSubmission::factory(5)
+            // )
             ->has(
                 ApplicationRole::factory(10)
+            )
+            ->has(
+                ApplicationResponse::factory(10)
             )
             ->create();
 
@@ -39,7 +42,5 @@ class ApplicationSeeder extends Seeder
                 });
             });
         });
-
-        ApplicationResponse::factory(10)->create();
     }
 }
