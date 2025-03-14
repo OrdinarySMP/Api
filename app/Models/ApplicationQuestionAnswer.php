@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestionAnswer whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestionAnswer whereUpdatedAt($value)
  *
+ * @property-read \App\Models\ApplicationQuestion|null $applicationQuestion
+ *
  * @mixin \Eloquent
  */
 class ApplicationQuestionAnswer extends Model

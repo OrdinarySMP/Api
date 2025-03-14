@@ -20,7 +20,6 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $completion_message
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property ApplicationState $state
  *
  * @method static \Database\Factories\ApplicationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Application newModelQuery()
@@ -37,6 +36,33 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereLogChannel($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereUpdatedAt($value)
+ *
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $acceptRemovalRoles
+ * @property-read int|null $accept_removal_roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationResponse> $acceptedResponses
+ * @property-read int|null $accepted_responses_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $acceptedRoles
+ * @property-read int|null $accepted_roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationQuestion> $applicationQuestions
+ * @property-read int|null $application_questions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationResponse> $applicationResponses
+ * @property-read int|null $application_responses_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $applicationRoles
+ * @property-read int|null $application_roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationSubmission> $applicationSubmissions
+ * @property-read int|null $application_submissions_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationResponse> $deniedResponses
+ * @property-read int|null $denied_responses_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $deniedRoles
+ * @property-read int|null $denied_roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $denyRemovalRoles
+ * @property-read int|null $deny_removal_roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $pendingRoles
+ * @property-read int|null $pending_roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $pingRoles
+ * @property-read int|null $ping_roles_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $restrictedRoles
+ * @property-read int|null $restricted_roles_count
  *
  * @mixin \Eloquent
  */

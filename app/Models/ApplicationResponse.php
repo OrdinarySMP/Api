@@ -29,6 +29,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationResponse whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationResponse whereUpdatedAt($value)
  *
+ * @property-read \App\Models\Application|null $application
+ *
+ * @method static Builder<static>|ApplicationResponse accepted()
+ * @method static Builder<static>|ApplicationResponse denied()
+ *
  * @mixin \Eloquent
  */
 class ApplicationResponse extends Model
