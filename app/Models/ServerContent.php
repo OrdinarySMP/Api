@@ -12,6 +12,29 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $heading
  * @property string $not_recommended
  * @property string $recommended
+ * @property int $id
+ * @property string $name
+ * @property string $url
+ * @property string $description
+ * @property bool $is_recommended
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ *
+ * @method static \Database\Factories\ServerContentFactory factory($count = null, $state = [])
+ * @method static Builder<static>|ServerContent newModelQuery()
+ * @method static Builder<static>|ServerContent newQuery()
+ * @method static Builder<static>|ServerContent notRecommended()
+ * @method static Builder<static>|ServerContent query()
+ * @method static Builder<static>|ServerContent recommended()
+ * @method static Builder<static>|ServerContent whereCreatedAt($value)
+ * @method static Builder<static>|ServerContent whereDescription($value)
+ * @method static Builder<static>|ServerContent whereId($value)
+ * @method static Builder<static>|ServerContent whereIsRecommended($value)
+ * @method static Builder<static>|ServerContent whereName($value)
+ * @method static Builder<static>|ServerContent whereUpdatedAt($value)
+ * @method static Builder<static>|ServerContent whereUrl($value)
+ *
+ * @mixin \Eloquent
  */
 class ServerContent extends Model
 {
