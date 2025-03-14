@@ -25,6 +25,7 @@ class TicketTeamController extends Controller
             ->allowedIncludes(['ticketTeamRoles'])
             ->allowedFilters([
                 AllowedFilter::exact('id'),
+                AllowedFilter::exact('ticketButtons.id'),
                 'name',
             ])
             ->getOrPaginate();
