@@ -23,8 +23,9 @@ class UpdateRequest extends FormRequest
     {
         return [
             'application_question_id' => 'required|exists:application_questions,id',
-            'application_id' => 'required|exists:applications,id',
+            'application_submission_id' => 'required|exists:application_submissions,id',
             'answer' => 'required|string',
+            'attachments' => 'nullable|string',
         ];
     }
 }

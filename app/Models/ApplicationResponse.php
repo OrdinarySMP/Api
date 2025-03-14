@@ -3,8 +3,10 @@
 namespace App\Models;
 
 use App\Enums\ApplicationResponseType;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -27,6 +29,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationResponse whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationResponse whereUpdatedAt($value)
  *
+ * @property-read \App\Models\Application|null $application
+ *
+ * @method static Builder<static>|ApplicationResponse accepted()
+ * @method static Builder<static>|ApplicationResponse denied()
+ *
  * @mixin \Eloquent
  */
 class ApplicationResponse extends Model
@@ -39,4 +46,28 @@ class ApplicationResponse extends Model
     protected $casts = [
         'type' => ApplicationResponseType::class,
     ];
+
+    /**
+     * @return BelongsTo<Application, $this>
+     */
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
+    }
+
+    /**
+     * @param  Builder<ApplicationResponse>  $query
+     */
+    public function scopeAccepted(Builder $query): void
+    {
+        $query->where('type', ApplicationResponseType::Accepted);
+    }
+
+    /**
+     * @param  Builder<ApplicationResponse>  $query
+     */
+    public function scopeDenied(Builder $query): void
+    {
+        $query->where('type', ApplicationResponseType::Denied);
+    }
 }

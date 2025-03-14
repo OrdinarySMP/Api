@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ApplicationSubmissionState;
 use App\Http\Requests\ApplicationQuestionAnswer\StoreRequest;
 use App\Http\Requests\ApplicationQuestionAnswer\UpdateRequest;
 use App\Http\Resources\ApplicationQuestionAnswerResource;
 use App\Models\ApplicationQuestionAnswer;
+use App\Models\ApplicationSubmission;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -22,8 +24,8 @@ class ApplicationQuestionAnswerController extends Controller
         }
         $applicationQuestionAnswer = QueryBuilder::for(ApplicationQuestionAnswer::class)
             ->allowedFilters([
-                'question',
                 AllowedFilter::exact('id'),
+                AllowedFilter::exact('application_id'),
             ])
             ->getOrPaginate();
 
@@ -35,7 +37,17 @@ class ApplicationQuestionAnswerController extends Controller
      */
     public function store(StoreRequest $request): ApplicationQuestionAnswerResource
     {
-        return new ApplicationQuestionAnswerResource(ApplicationQuestionAnswer::create($request->validated()));
+        $data = $request->validated();
+
+        /**
+         * @var ApplicationSubmission
+         */
+        $applicationSubmission = ApplicationSubmission::find($data['application_submission_id']);
+        if ($applicationSubmission->state === ApplicationSubmissionState::Cancelled) {
+            abort(403, 'Application was cancelled.');
+        }
+
+        return new ApplicationQuestionAnswerResource(ApplicationQuestionAnswer::create($data));
     }
 
     /**

@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests\Application;
 
-use App\Enums\ApplicationState;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 
 class StoreRequest extends FormRequest
 {
@@ -24,11 +22,7 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'discord_id' => 'required|size:18',
-            'submitted_at' => 'nullable|date_format:Y-m-d H:i:s',
-            'application_response_id' => 'nullable|exists:application_responses,id',
-            'state' => ['required', new Enum(ApplicationState::class)],
-            'custom_response' => 'nullable|string',
+
         ];
     }
 }

@@ -21,9 +21,10 @@ class ApplicationController extends Controller
             abort(403);
         }
         $applications = QueryBuilder::for(Application::class)
+            ->allowedIncludes(['restrictedRoles'])
             ->allowedFilters([
-                'question',
                 AllowedFilter::exact('id'),
+                'name',
             ])
             ->getOrPaginate();
 
@@ -35,7 +36,9 @@ class ApplicationController extends Controller
      */
     public function store(StoreRequest $request): ApplicationResource
     {
-        return new ApplicationResource(Application::create($request->validated()));
+        abort(503);
+
+        // return new ApplicationResource(Application::create($request->validated()));
     }
 
     /**
@@ -43,9 +46,10 @@ class ApplicationController extends Controller
      */
     public function update(UpdateRequest $request, Application $application): ApplicationResource
     {
-        $application->update($request->validated());
+        abort(503);
+        // $application->update($request->validated());
 
-        return new ApplicationResource($application->refresh());
+        // return new ApplicationResource($application->refresh());
     }
 
     /**
@@ -56,7 +60,7 @@ class ApplicationController extends Controller
         if (! request()->user()?->can('application.delete')) {
             abort(403);
         }
-
-        return $application->delete() ?? false;
+        abort(503);
+        // return $application->delete() ?? false;
     }
 }
