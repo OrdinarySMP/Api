@@ -29,7 +29,7 @@ class TicketController extends Controller
             abort(403);
         }
         $tickets = QueryBuilder::for(Ticket::class)
-            ->allowedIncludes(['ticketButton', 'ticketTranscripts'])
+            ->allowedIncludes(['ticketButton.ticketTeam.ticketTeamRoles', 'ticketTranscripts'])
             ->allowedSorts('created_at')
             ->allowedFilters([
                 AllowedFilter::exact('id'),
