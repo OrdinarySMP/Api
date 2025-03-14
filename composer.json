@@ -20,6 +20,7 @@
         "spatie/laravel-query-builder": "^6.2"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.5",
         "beyondcode/laravel-dump-server": "^2.0",
         "fakerphp/faker": "^1.23",
         "larastan/larastan": "^3.0",
