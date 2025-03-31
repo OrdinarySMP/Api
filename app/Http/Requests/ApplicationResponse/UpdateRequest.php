@@ -13,7 +13,7 @@ class UpdateRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() && $this->user()->can('applicationResponse.udpate');
+        return $this->user() && $this->user()->can('applicationResponse.update');
     }
 
     /**
