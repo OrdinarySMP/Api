@@ -42,7 +42,7 @@ class DiscordController extends Controller
             'discord_id' => $user->id,
         ], [
             'name' => $user->name,
-            'nickname' => $user->nickname,
+            'nickname' => $user->user['global_name'],
             'avatar' => $user->avatar,
             'discord_token' => $user->token,
             'discord_refresh_token' => $user->refreshToken,

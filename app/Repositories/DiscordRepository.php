@@ -5,6 +5,7 @@ namespace App\Repositories;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class DiscordRepository
 {
@@ -113,5 +114,56 @@ class DiscordRepository
         });
 
         return $user;
+    }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getGuildMemberById(string $userId): array
+    {
+        $guildId = config('services.discord.server_id');
+        /**
+         * @var array<mixed>
+         */
+        $member = Cache::remember('discord-guild-'.$guildId.'-member-'.$userId, 60 * 60 * 24, function () use ($userId, $guildId) { // save for 1 days
+            $response = Http::discordBot()->get("/guilds/{$guildId}/members/{$userId}");
+
+            return $response->json();
+        });
+
+        if (! $member || ! array_key_exists('user', $member)) {
+            Log::error("Could not find member for user id: {$userId}.", $member);
+            throw new \Error("Could not find member for user id: {$userId}.");
+        }
+
+        return $member;
+    }
+
+    public function addRoleToMember(string $roleId, string $userId, ?string $reason = null): bool
+    {
+        $guildId = config('services.discord.server_id');
+        $request = Http::discordBot();
+        if ($reason) {
+            $request = $request->withHeaders([
+                'X-Audit-Log-Reason' => $reason,
+            ]);
+        }
+        $response = $request->put("/guilds/{$guildId}/members/{$userId}/roles/{$roleId}");
+
+        return $response->noContent();
+    }
+
+    public function removeRoleFromMember(string $roleId, string $userId, ?string $reason = null): bool
+    {
+        $guildId = config('services.discord.server_id');
+        $request = Http::discordBot();
+        if ($reason) {
+            $request = $request->withHeaders([
+                'X-Audit-Log-Reason' => $reason,
+            ]);
+        }
+        $response = $request->delete("/guilds/{$guildId}/members/{$userId}/roles/{$roleId}");
+
+        return $response->noContent();
     }
 }
