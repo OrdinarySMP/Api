@@ -27,6 +27,7 @@ class ServerContentController extends Controller
             ->allowedFilters([
                 'name',
                 AllowedFilter::exact('is_recommended'),
+                AllowedFilter::exact('is_active'),
                 AllowedFilter::exact('id'),
             ])
             ->getOrPaginate();
@@ -74,8 +75,8 @@ class ServerContentController extends Controller
         ]);
 
         $messages = ServerContentMessage::where('server_id', config('services.discord.server_id'))->first();
-        $notRecommended = ServerContent::notRecommended()->get();
-        $recommended = ServerContent::recommended()->get();
+        $notRecommended = ServerContent::notRecommended()->active()->get();
+        $recommended = ServerContent::recommended()->active()->get();
 
         if (! $messages) {
             abort(400, 'No messages available');

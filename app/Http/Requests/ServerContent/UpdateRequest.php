@@ -26,6 +26,7 @@ class UpdateRequest extends FormRequest
             'url' => 'required|url:http,https|max:256',
             'description' => 'required|max:512',
             'is_recommended' => 'required|boolean',
+            'is_active' => 'required|boolean',
         ];
     }
 }
