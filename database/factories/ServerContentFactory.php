@@ -21,6 +21,7 @@ class ServerContentFactory extends Factory
             'url' => fake()->url(),
             'description' => fake()->sentence(2),
             'is_recommended' => fake()->boolean(),
+            'is_active' => fake()->boolean(),
         ];
     }
 }

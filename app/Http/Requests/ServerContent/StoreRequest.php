@@ -26,6 +26,7 @@ class StoreRequest extends FormRequest
             'url' => 'required|url:http,https',
             'description' => 'required|max:512',
             'is_recommended' => 'required|boolean',
+            'is_active' => 'required|boolean',
         ];
     }
 }

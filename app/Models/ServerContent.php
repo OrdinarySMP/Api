@@ -45,6 +45,7 @@ class ServerContent extends Model
 
     protected $casts = [
         'is_recommended' => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     /**
@@ -61,5 +62,13 @@ class ServerContent extends Model
     public function scopeRecommended(Builder $query): void
     {
         $query->where('is_recommended', true);
+    }
+
+    /**
+     * @param  Builder<ServerContent>  $query
+     */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('is_active', true);
     }
 }

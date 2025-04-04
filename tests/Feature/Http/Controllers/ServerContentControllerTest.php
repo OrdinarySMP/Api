@@ -20,6 +20,7 @@ test('can create server content', function () {
         'url' => 'https://example.com',
         'description' => 'Test Content',
         'is_recommended' => true,
+        'is_active' => true,
     ];
 
     $this->actingAs($user)
@@ -38,6 +39,7 @@ test('can update server content', function () {
         'url' => 'https://example.com',
         'description' => 'Test Content',
         'is_recommended' => true,
+        'is_active' => true,
     ];
 
     $this->actingAs($user)
