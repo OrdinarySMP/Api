@@ -186,8 +186,18 @@ class TicketRepository
                     'inline' => true,
                 ],
                 [
+                    'name' => 'Ticket type',
+                    'value' => $ticket->ticketButton->text ?? '---',
+                    'inline' => true,
+                ],
+                [
                     'name' => 'Open Time',
                     'value' => '<t:'.$ticket->created_at?->timestamp.'>',
+                    'inline' => true,
+                ],
+                [
+                    'name' => 'Close Time',
+                    'value' => '<t:'.$ticket->updated_at?->timestamp.'>',
                     'inline' => true,
                 ],
                 [
