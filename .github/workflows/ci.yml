@@ -64,7 +64,7 @@ jobs:
         run: |
           echo "APP_KEY=" > .env
           php artisan key:generate
-          php artisan test --coverage --min=65
+          ./vendor/bin/pest --coverage --min=70
         env:
           DB_CONNECTION: mysql
           DB_PORT: 3306

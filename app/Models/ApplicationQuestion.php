@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $id
@@ -26,12 +28,26 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestion whereQuestion($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestion whereUpdatedAt($value)
  *
+ * @property-read \App\Models\Application|null $application
+ *
  * @mixin \Eloquent
  */
 class ApplicationQuestion extends Model
 {
     /** @use HasFactory<\Database\Factories\ApplicationQuestionFactory> */
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $guarded = ['id', 'created_at', 'udpated_at'];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    /**
+     * @return BelongsTo<Application, $this>
+     */
+    public function application(): BelongsTo
+    {
+        return $this->belongsTo(Application::class);
+    }
 }

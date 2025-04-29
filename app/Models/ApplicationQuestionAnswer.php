@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * @property int $id
@@ -26,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestionAnswer whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestionAnswer whereUpdatedAt($value)
  *
+ * @property-read \App\Models\ApplicationQuestion|null $applicationQuestion
+ *
  * @mixin \Eloquent
  */
 class ApplicationQuestionAnswer extends Model
@@ -34,4 +37,12 @@ class ApplicationQuestionAnswer extends Model
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'udpated_at'];
+
+    /**
+     * @return BelongsTo<ApplicationQuestion, $this>
+     */
+    public function applicationQuestion(): BelongsTo
+    {
+        return $this->belongsTo(ApplicationQuestion::class)->withTrashed();
+    }
 }
