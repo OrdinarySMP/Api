@@ -125,7 +125,7 @@ class ApplicationSubmissionRepository
         $buttonActionRow = $this->getButtonsActionRow($applicationSubmission);
         $acceptActionRow = $this->getAcceptActionRow($applicationSubmission);
         $denyActionRow = $this->getDenyActionRow($applicationSubmission);
-        $components = collect([$buttonActionRow, $acceptActionRow, $denyActionRow])->filter(fn ($component) => ! empty($component));
+        $components = collect([$buttonActionRow, $acceptActionRow, $denyActionRow])->filter(fn ($component) => ! empty($component))->values();
 
         return [
             'embeds' => [$embed],
