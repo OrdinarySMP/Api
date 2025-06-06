@@ -24,13 +24,13 @@ class UpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'discord_id' => 'nullable|size:18',
+            'discord_id' => 'nullable',
             'submitted_at' => 'nullable|date_format:Y-m-d H:i:s',
             'application_response_id' => 'nullable|exists:application_responses,id',
             'state' => ['nullable', new Enum(ApplicationSubmissionState::class)],
             'custom_response' => 'nullable|string',
             'message_link' => 'nullable|string|url:https',
-            'handled_by' => 'nullable|string|size:18',
+            'handled_by' => 'nullable|string',
             'application_id' => 'nullable|exists:applications,id',
         ];
     }

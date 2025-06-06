@@ -24,13 +24,13 @@ class StoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'discord_id' => 'required|size:18',
+            'discord_id' => 'required',
             'submitted_at' => 'nullable|date_format:Y-m-d H:i:s',
             'application_response_id' => 'nullable|exists:application_responses,id',
             'state' => ['required', new Enum(ApplicationSubmissionState::class)],
             'custom_response' => 'nullable|string',
-            'message_link' => 'nullable|string|url:https', // TODO: push changes
-            'handled_by' => 'nullable|string|size:18',
+            'message_link' => 'nullable|string|url:https',
+            'handled_by' => 'nullable|string',
             'application_id' => 'required|exists:applications,id',
         ];
     }
