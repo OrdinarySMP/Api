@@ -31,7 +31,7 @@ class UpdateRequest extends FormRequest
             'emoji' => ['required', 'string', new EmojiRule],
             'naming_scheme' => 'required|string|max:128',
             'disabled' => 'required|boolean',
-            'ticket_button_ping_role_ids' => 'required|array',
+            'ticket_button_ping_role_ids' => 'present|array',
             'ticket_button_ping_role_ids.*' => 'string',
         ];
     }

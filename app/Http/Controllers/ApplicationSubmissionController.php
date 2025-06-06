@@ -7,6 +7,8 @@ use App\Http\Requests\ApplicationSubmission\UpdateRequest;
 use App\Http\Resources\ApplicationSubmissionResource;
 use App\Models\ApplicationSubmission;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -64,6 +66,13 @@ class ApplicationSubmissionController extends Controller
     {
         if (! request()->user()?->can('application-submission.delete')) {
             abort(403);
+        }
+
+        if ($applicationSubmission->message_id) {
+            $response = Http::discordBot()->delete('/channels/'.$applicationSubmission->channel_id.'/messages/'.$applicationSubmission->message_id);
+            if ($response->ok()) {
+                Log::error('Could not delete submission:', $response->json());
+            }
         }
 
         return $applicationSubmission->delete() ?? false;

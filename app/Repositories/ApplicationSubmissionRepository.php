@@ -7,6 +7,7 @@ use App\Enums\DiscordButton;
 use App\Models\ApplicationSubmission;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ApplicationSubmissionRepository
@@ -24,6 +25,11 @@ class ApplicationSubmissionRepository
                 ]
             );
         $data = $response->json();
+        if (! $response->ok()) {
+            Log::error('Could not send submission:', $data);
+
+            return false;
+        }
 
         $applicationSubmission->message_id = $data['id'];
         $applicationSubmission->channel_id = $data['channel_id'];
@@ -75,6 +81,9 @@ class ApplicationSubmissionRepository
                     ...$this->getMessageData($applicationSubmission),
                 ]
             );
+        if (! $response->ok()) {
+            Log::error('Could not update submission:', $response->json);
+        }
 
         return $response->ok();
     }
@@ -116,11 +125,6 @@ class ApplicationSubmissionRepository
      */
     private function getMessageData(ApplicationSubmission $applicationSubmission): array
     {
-        // add action row for template responses
-        // 1 select per action row
-        // 25 options per select
-        // https://discord.com/developers/docs/interactions/message-components#select-menu-object-select-menu-structure
-
         $embed = $this->getSubmissionEmbed($applicationSubmission);
         $buttonActionRow = $this->getButtonsActionRow($applicationSubmission);
         $acceptActionRow = $this->getAcceptActionRow($applicationSubmission);
@@ -171,14 +175,14 @@ class ApplicationSubmissionRepository
         $applicationSubmission->applicationQuestionAnswers->each(function ($applicationQuestionAnswer) use (&$fields, &$totalLenght) {
             $answer = strlen($applicationQuestionAnswer->answer) < 1024 ?
                 $applicationQuestionAnswer->answer :
-                'This answer is too long. Please view in the helper panel.';
+                'This answer is too long. Please view in the thread.';
             $question = $applicationQuestionAnswer->applicationQuestion->question ?? '';
 
             $totalLenght += strlen($answer);
             $totalLenght += strlen($question);
 
             $fields[] = [
-                'name' => $question,
+                'name' => "**{$applicationQuestionAnswer->applicationQuestion?->order}. {$question}**",
                 'value' => $answer,
             ];
         });
@@ -238,7 +242,8 @@ class ApplicationSubmissionRepository
      */
     private function getStatsField(ApplicationSubmission $applicationSubmission, array $member): array
     {
-        $applicationSubmissionCount = ApplicationSubmission::where('discord_id', $applicationSubmission->discord_id)
+        $applicationSubmissionCount = ApplicationSubmission::completed()
+            ->where('discord_id', $applicationSubmission->discord_id)
             ->where('application_id', $applicationSubmission->application_id)
             ->count();
         $joinedAt = Carbon::parse($member['joined_at'])->timestamp;
@@ -265,7 +270,7 @@ class ApplicationSubmissionRepository
     {
         return [
             'name' => '**Application too long**',
-            'value' => 'Please view the application on the helper panel',
+            'value' => 'Please view the application on the thread',
         ];
     }
 
@@ -349,6 +354,9 @@ class ApplicationSubmissionRepository
                 ],
             ],
         ]);
+        if (! $channelResponse->ok()) {
+            Log::error('Could not send response to user:', $channelResponse->json());
+        }
 
         return $channelResponse->ok();
     }
@@ -406,18 +414,28 @@ class ApplicationSubmissionRepository
                 ]
             );
         $thread = $threadResponse->json();
+        if (! $threadResponse->ok()) {
+            Log::error('Could not create thread:', $thread);
+        }
         $applicationSubmission->applicationQuestionAnswers
             ->each(function ($applicationQuestionAnswer) use ($thread) {
-                if (! $applicationQuestionAnswer->attachments) {
-                    return;
+                if (strlen($applicationQuestionAnswer->answer) > 1024) {
+                    Http::discordBot()
+                        ->post(
+                            '/channels/'.$thread['id'].'/messages',
+                            [
+                                'content' => "**{$applicationQuestionAnswer->applicationQuestion?->question}**\n{$applicationQuestionAnswer->answer}",
+                            ]
+                        );
+                } elseif ($applicationQuestionAnswer->attachments) {
+                    Http::discordBot()
+                        ->post(
+                            '/channels/'.$thread['id'].'/messages',
+                            [
+                                'content' => "**{$applicationQuestionAnswer->applicationQuestion?->question}**\n{$applicationQuestionAnswer->attachments}",
+                            ]
+                        );
                 }
-                Http::discordBot()
-                    ->post(
-                        '/channels/'.$thread['id'].'/messages',
-                        [
-                            'content' => "**{$applicationQuestionAnswer->applicationQuestion?->question}**\n{$applicationQuestionAnswer->attachments}",
-                        ]
-                    );
             });
     }
 

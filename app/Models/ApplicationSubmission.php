@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ApplicationSubmissionState;
 use App\Observers\ApplicationSubmissionObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -81,5 +82,13 @@ class ApplicationSubmission extends Model
     public function application(): BelongsTo
     {
         return $this->belongsTo(Application::class)->withTrashed();
+    }
+
+    /**
+     * @param  Builder<ApplicationSubmission>  $query
+     */
+    public function scopeCompleted(Builder $query): void
+    {
+        $query->whereIn('state', [ApplicationSubmissionState::Pending->value, ApplicationSubmissionState::Accepted->value, ApplicationSubmissionState::Denied->value]);
     }
 }
