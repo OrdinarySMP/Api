@@ -19,7 +19,7 @@ class ApplicationSubmissionController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        if (! request()->user()?->can('application-submission.read')) {
+        if (! request()->user()?->can('applicationSubmission.read')) {
             abort(403);
         }
         $applicationSubmissions = QueryBuilder::for(ApplicationSubmission::class)
@@ -64,7 +64,7 @@ class ApplicationSubmissionController extends Controller
      */
     public function destroy(ApplicationSubmission $applicationSubmission): bool
     {
-        if (! request()->user()?->can('application-submission.delete')) {
+        if (! request()->user()?->can('applicationSubmission.delete')) {
             abort(403);
         }
 
