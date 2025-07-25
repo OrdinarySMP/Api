@@ -72,6 +72,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('ticket/{ticket}/close', [TicketController::class, 'close'])->name('ticket.close');
 
     Route::get('application-submission/{applicationSubmission}/history', [ApplicationSubmissionController::class, 'history'])->name('application-submission.history');
+    Route::get('application/{application}/send-button', [ApplicationController::class, 'sendButton'])->name('application.sendButton');
 });
 
 Route::post('login', [AuthController::class, 'login'])->name('login');
