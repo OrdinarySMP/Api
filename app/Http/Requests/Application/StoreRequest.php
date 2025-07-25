@@ -45,6 +45,12 @@ class StoreRequest extends FormRequest
             'pending_role_ids.*' => 'string',
             'required_role_ids' => 'array',
             'required_role_ids.*' => 'string',
+            'embed_channel_id' => 'nullable|string|max:20',
+            'embed_title' => 'nullable|string|max:100',
+            'embed_description' => 'nullable|string|max:1000',
+            'embed_color' => 'nullable|string|max:7',
+            'embed_button_text' => 'nullable|string|max:50',
+            'embed_button_color' => 'nullable|int|max:7',
         ];
     }
 }

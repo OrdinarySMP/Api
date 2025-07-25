@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ApplicationRoleType;
+use App\Enums\DiscordButton;
 use App\Http\Requests\Application\StoreRequest;
 use App\Http\Requests\Application\UpdateRequest;
 use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
 use App\Models\ApplicationRole;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Http;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -297,5 +299,39 @@ class ApplicationController extends Controller
         }
 
         return $application->delete() ?? false;
+    }
+
+    public function sendButton(Application $application): bool
+    {
+        if (! $application->embed_title ||
+            ! $application->embed_description ||
+            ! $application->embed_color ||
+            ! $application->embed_channel_id
+        ) {
+            return false;
+        }
+        $data = [
+            'embeds' => [
+                [
+                    'title' => $application->embed_title,
+                    'description' => $application->embed_description,
+                    'color' => hexdec(str_replace('#', '', $application->embed_color)),
+                ],
+            ],
+            'components' => [
+                [
+                    'type' => 1,
+                    'components' => [[
+                        'type' => 2, // button
+                        'custom_id' => 'applicationSubmission-start-'.$application->id,
+                        'style' => $application->embed_button_color,
+                        'label' => $application->embed_button_text,
+                    ]],
+                ],
+            ],
+        ];
+        $response = Http::discordBot()->post('/channels/'.$application->embed_channel_id.'/messages', $data);
+
+        return $response->ok();
     }
 }
