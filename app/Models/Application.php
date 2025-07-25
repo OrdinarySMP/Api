@@ -181,4 +181,12 @@ class Application extends Model
     {
         return $this->applicationRoles()->where('type', ApplicationRoleType::Pending);
     }
+
+    /**
+     * @return HasMany<ApplicationRole, $this>
+     */
+    public function requiredRoles(): HasMany
+    {
+        return $this->applicationRoles()->where('type', ApplicationRoleType::Required);
+    }
 }

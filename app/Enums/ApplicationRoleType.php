@@ -11,4 +11,5 @@ enum ApplicationRoleType: int
     case AcceptRemoval = 4;
     case DenyRemoval = 5;
     case Pending = 6;
+    case Required = 7;
 }

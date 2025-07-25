@@ -30,8 +30,9 @@ test('can create application', function () {
         'accept_removal_role_ids' => ['9', '10'],
         'deny_removal_role_ids' => ['11', '12'],
         'pending_role_ids' => ['13', '14'],
+        'required_role_ids' => ['15', '16'],
     ];
-    $validationData = collect($data)->except('restricted_role_ids', 'accepted_role_ids', 'denied_role_ids', 'ping_role_ids', 'accept_removal_role_ids', 'deny_removal_role_ids', 'pending_role_ids')->toArray();
+    $validationData = collect($data)->except('restricted_role_ids', 'accepted_role_ids', 'denied_role_ids', 'ping_role_ids', 'accept_removal_role_ids', 'deny_removal_role_ids', 'pending_role_ids', 'required_role_ids')->toArray();
 
     $this->actingAs($user)
         ->postJson(route('application.store'), $data)
@@ -48,6 +49,7 @@ test('can create application', function () {
     expect(Application::first()->acceptRemovalRoles->map(fn ($acceptRemovalRole) => $acceptRemovalRole->role_id)->toArray())->toBe(['9', '10']);
     expect(Application::first()->denyRemovalRoles->map(fn ($denyRemovalRole) => $denyRemovalRole->role_id)->toArray())->toBe(['11', '12']);
     expect(Application::first()->pendingRoles->map(fn ($pendingRole) => $pendingRole->role_id)->toArray())->toBe(['13', '14']);
+    expect(Application::first()->requiredRoles->map(fn ($requiredRole) => $requiredRole->role_id)->toArray())->toBe(['15', '16']);
 });
 
 test('can update application', function () {
@@ -68,8 +70,9 @@ test('can update application', function () {
         'accept_removal_role_ids' => ['9', '10'],
         'deny_removal_role_ids' => ['11', '12'],
         'pending_role_ids' => ['13', '14'],
+        'required_role_ids' => ['15', '16'],
     ];
-    $validationData = collect($data)->except('restricted_role_ids', 'accepted_role_ids', 'denied_role_ids', 'ping_role_ids', 'accept_removal_role_ids', 'deny_removal_role_ids', 'pending_role_ids')->toArray();
+    $validationData = collect($data)->except('restricted_role_ids', 'accepted_role_ids', 'denied_role_ids', 'ping_role_ids', 'accept_removal_role_ids', 'deny_removal_role_ids', 'pending_role_ids', 'required_role_ids')->toArray();
 
     $this->actingAs($user)
         ->patchJson(route('application.update', $application), $data)
@@ -85,6 +88,7 @@ test('can update application', function () {
     expect($application->acceptRemovalRoles->map(fn ($acceptRemovalRole) => $acceptRemovalRole->role_id)->toArray())->toBe(['9', '10']);
     expect($application->denyRemovalRoles->map(fn ($denyRemovalRole) => $denyRemovalRole->role_id)->toArray())->toBe(['11', '12']);
     expect($application->pendingRoles->map(fn ($pendingRole) => $pendingRole->role_id)->toArray())->toBe(['13', '14']);
+    expect($application->requiredRoles->map(fn ($requiredRole) => $requiredRole->role_id)->toArray())->toBe(['15', '16']);
 });
 
 test('can delete application', function () {
