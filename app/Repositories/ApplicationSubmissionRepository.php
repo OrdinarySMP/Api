@@ -430,7 +430,7 @@ class ApplicationSubmissionRepository
                 ]
             );
         $thread = $threadResponse->json();
-        if (! $threadResponse->ok()) {
+        if (! $threadResponse->created()) {
             Log::error('Could not create thread:', $thread);
         }
         $applicationSubmission->applicationQuestionAnswers
