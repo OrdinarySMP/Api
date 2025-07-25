@@ -155,7 +155,15 @@ class ApplicationSubmissionRepository
         $statsField = $this->getStatsField($applicationSubmission, $member);
         $tooLongField = $this->getTooLongField();
         $applicationQuestionAnswers = $applicationSubmission->applicationQuestionAnswers;
-        $title = "{$member['user']['global_name']}`s application for {$applicationSubmission->application?->name}";
+        $name = $member['user']['global_name'] ?? $member['user']['username'];
+        $title = "{$name}`s application for {$applicationSubmission->application?->name}";
+
+        if ($member['user']['avatar']) {
+            $avatar = "https://cdn.discordapp.com/avatars/{$member['user']['id']}/{$member['user']['avatar']}.png";
+        } else {
+            $index = ($member['user']['id'] >> 22) % 6;
+            $avatar = "https://cdn.discordapp.com/embed/avatars/{$index}.png";
+        }
 
         if ($applicationQuestionAnswers->count() > 25) {
             return [
@@ -164,7 +172,7 @@ class ApplicationSubmissionRepository
                 'timestamp' => now()->toIso8601String(),
                 'color' => $this->getEmbedColor($applicationSubmission),
                 'thumbnail' => [
-                    'url' => "https://cdn.discordapp.com/avatars/{$member['user']['id']}/{$member['user']['avatar']}.png",
+                    'url' => $avatar,
                 ],
             ];
         }
@@ -201,7 +209,7 @@ class ApplicationSubmissionRepository
                 'timestamp' => now()->toIso8601String(),
                 'color' => $this->getEmbedColor($applicationSubmission),
                 'thumbnail' => [
-                    'url' => "https://cdn.discordapp.com/avatars/{$member['user']['id']}/{$member['user']['avatar']}.png",
+                    'url' => $avatar,
                 ],
             ];
         }
@@ -212,7 +220,7 @@ class ApplicationSubmissionRepository
             'timestamp' => now()->toIso8601String(),
             'color' => $this->getEmbedColor($applicationSubmission),
             'thumbnail' => [
-                'url' => "https://cdn.discordapp.com/avatars/{$member['user']['id']}/{$member['user']['avatar']}.png",
+                'url' => $avatar,
             ],
         ];
     }
