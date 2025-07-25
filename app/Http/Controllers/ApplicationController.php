@@ -34,6 +34,7 @@ class ApplicationController extends Controller
                 'acceptRemovalRoles',
                 'denyRemovalRoles',
                 'pendingRoles',
+                'requiredRoles',
             ])
             ->allowedFilters([
                 AllowedFilter::exact('id'),
@@ -147,6 +148,19 @@ class ApplicationController extends Controller
             ApplicationRole::insert($pendingRole->toArray());
         }
 
+        if (array_key_exists('required_role_ids', $data)) {
+            /**
+             * @var array<string>
+             */
+            $requiredRoleIds = $data['required_role_ids'];
+            $requiredRole = collect($requiredRoleIds)->map(fn ($requiredRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $requiredRoleId,
+                'type' => ApplicationRoleType::Required,
+            ]);
+            ApplicationRole::insert($requiredRole->toArray());
+        }
+
         return new ApplicationResource($application);
     }
 
@@ -254,6 +268,20 @@ class ApplicationController extends Controller
                 'type' => ApplicationRoleType::Pending,
             ]);
             ApplicationRole::insert($pendingRole->toArray());
+        }
+
+        if (array_key_exists('required_role_ids', $data)) {
+            $application->requiredRoles()->delete();
+            /**
+             * @var array<string>
+             */
+            $requiredRoleIds = $data['required_role_ids'];
+            $requiredRole = collect($requiredRoleIds)->map(fn ($requiredRoleId) => [
+                'application_id' => $application->id,
+                'role_id' => $requiredRoleId,
+                'type' => ApplicationRoleType::Required,
+            ]);
+            ApplicationRole::insert($requiredRole->toArray());
         }
 
         return new ApplicationResource($application);

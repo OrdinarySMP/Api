@@ -43,6 +43,8 @@ class UpdateRequest extends FormRequest
             'deny_removal_role_ids.*' => 'string',
             'pending_role_ids' => 'array',
             'pending_role_ids.*' => 'string',
+            'required_role_ids' => 'array',
+            'required_role_ids.*' => 'string',
         ];
     }
 }
