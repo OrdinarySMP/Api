@@ -287,33 +287,39 @@ class ApplicationSubmissionRepository
      */
     private function getButtonsActionRow(ApplicationSubmission $applicationSubmission): array
     {
-        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
-            return [];
-        }
         $buttons = collect();
+        if ($applicationSubmission->state === ApplicationSubmissionState::Pending) {
+            $buttons->push([
+                'type' => 2, // button
+                'custom_id' => 'applicationSubmission-accept-'.$applicationSubmission->id,
+                'style' => DiscordButton::Success,
+                'label' => 'Accept',
+            ]);
+            $buttons->push([
+                'type' => 2, // button
+                'custom_id' => 'applicationSubmission-deny-'.$applicationSubmission->id,
+                'style' => DiscordButton::Danger,
+                'label' => 'Deny',
+            ]);
+            $buttons->push([
+                'type' => 2, // button
+                'custom_id' => 'applicationSubmission-acceptWithReason-'.$applicationSubmission->id,
+                'style' => DiscordButton::Success,
+                'label' => 'Accept with reason',
+            ]);
+            $buttons->push([
+                'type' => 2, // button
+                'custom_id' => 'applicationSubmission-denyWithReason-'.$applicationSubmission->id,
+                'style' => DiscordButton::Danger,
+                'label' => 'Deny with reason',
+            ]);
+        }
+
         $buttons->push([
             'type' => 2, // button
-            'custom_id' => 'applicationSubmission-accept-'.$applicationSubmission->id,
-            'style' => DiscordButton::Success,
-            'label' => 'Accept',
-        ]);
-        $buttons->push([
-            'type' => 2, // button
-            'custom_id' => 'applicationSubmission-deny-'.$applicationSubmission->id,
-            'style' => DiscordButton::Danger,
-            'label' => 'Deny',
-        ]);
-        $buttons->push([
-            'type' => 2, // button
-            'custom_id' => 'applicationSubmission-acceptWithReason-'.$applicationSubmission->id,
-            'style' => DiscordButton::Success,
-            'label' => 'Accept with reason',
-        ]);
-        $buttons->push([
-            'type' => 2, // button
-            'custom_id' => 'applicationSubmission-denyWithReason-'.$applicationSubmission->id,
-            'style' => DiscordButton::Danger,
-            'label' => 'Deny with reason',
+            'custom_id' => 'applicationSubmission-history-'.$applicationSubmission->id,
+            'style' => DiscordButton::Primary,
+            'label' => 'History',
         ]);
 
         return [

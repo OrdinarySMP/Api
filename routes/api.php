@@ -70,6 +70,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::apiResource('ticket', TicketController::class)->except(['show', 'update', 'destroy']);
     Route::post('ticket/{ticket}/close', [TicketController::class, 'close'])->name('ticket.close');
+
+    Route::get('application-submission/{applicationSubmission}/history', [ApplicationSubmissionController::class, 'history'])->name('application-submission.history');
 });
 
 Route::post('login', [AuthController::class, 'login'])->name('login');
