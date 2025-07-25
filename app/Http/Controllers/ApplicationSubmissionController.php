@@ -77,4 +77,13 @@ class ApplicationSubmissionController extends Controller
 
         return $applicationSubmission->delete() ?? false;
     }
+
+    public function history(ApplicationSubmission $applicationSubmission): AnonymousResourceCollection
+    {
+        $history = ApplicationSubmission::with('application', 'applicationResponse')
+            ->where('discord_id', $applicationSubmission->discord_id)
+            ->get();
+
+        return ApplicationSubmissionResource::collection($history);
+    }
 }
