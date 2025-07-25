@@ -256,10 +256,12 @@ class ApplicationSubmissionRepository
             ->count();
         $joinedAt = Carbon::parse($member['joined_at'])->timestamp;
         $duration = now()->diffForHumans($applicationSubmission->created_at, \Carbon\CarbonInterface::DIFF_ABSOLUTE);
+        $tag = isset($member['user']['primary_guild'], $member['user']['primary_guild']['tag']) ? $member['user']['primary_guild']['tag'] : '---';
         $stats =
             "**User ID:** {$applicationSubmission->discord_id}\n".
             "**Username:** {$member['user']['username']}\n".
             "**User Mention:** <@{$applicationSubmission->discord_id}>\n".
+            "**Tag:** {$tag}\n".
             "**Application Duration:** {$duration}\n".
             "**Time on Server:** <t:{$joinedAt}:R>\n".
             "**Application Number:** {$applicationSubmissionCount}";
