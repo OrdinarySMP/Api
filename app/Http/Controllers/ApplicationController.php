@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ApplicationRoleType;
-use App\Enums\DiscordButton;
 use App\Http\Requests\Application\StoreRequest;
 use App\Http\Requests\Application\UpdateRequest;
 use App\Http\Resources\ApplicationResource;
