@@ -34,6 +34,10 @@ class ApplicationSubmissionController extends Controller
                 AllowedFilter::exact('application_id'),
             ])
             ->allowedSorts([
+                'id',
+                'state',
+                'created_at',
+                'updated_at',
                 'submitted_at',
             ])
             ->getOrPaginate();

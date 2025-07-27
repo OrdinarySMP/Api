@@ -37,6 +37,11 @@ class ApplicationController extends Controller
                 'pendingRoles',
                 'requiredRoles',
             ])
+            ->allowedSorts([
+                'id',
+                'name',
+                'is_active',
+            ])
             ->allowedFilters([
                 AllowedFilter::exact('id'),
                 'name',
