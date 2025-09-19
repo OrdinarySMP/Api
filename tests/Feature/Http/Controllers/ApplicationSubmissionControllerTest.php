@@ -33,7 +33,7 @@ test('auth user can get application submission', function () {
     $this->actingAs($user)
         ->get(route('application-submission.index'))
         ->assertOk()
-        ->assertJson(['data' => [$applicationSubmission->toArray()]]);
+        ->assertJson(['data' => [collect($applicationSubmission)->except('application')->toArray()]]);
 });
 
 test('can create application submission', function () {
@@ -81,13 +81,12 @@ test('can update application submission', function () {
     $this->assertDatabaseHas('application_submissions', $data);
 });
 
-test('can delete application', function () {
+test('can delete application submission', function () {
     $user = User::factory()->owner()->create();
     $applicationSubmission = ApplicationSubmission::factory()->create();
 
     $this->actingAs($user)
         ->deleteJson(route('application-submission.destroy', $applicationSubmission))
         ->assertOk();
-
-    $this->assertDatabaseMissing('application_submissions', $applicationSubmission->toArray());
+    $this->assertDatabaseMissing('application_submissions', collect($applicationSubmission)->except('application')->toArray());
 });

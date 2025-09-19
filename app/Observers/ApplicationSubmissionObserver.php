@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Enums\ApplicationSubmissionState;
 use App\Models\ApplicationSubmission;
+use App\Repositories\ApplicationActivityRepository;
 use App\Repositories\ApplicationSubmissionRepository;
 
 class ApplicationSubmissionObserver
@@ -18,11 +19,16 @@ class ApplicationSubmissionObserver
     public function created(ApplicationSubmission $applicationSubmission): void
     {
         ApplicationSubmission::withoutEvents(function () use ($applicationSubmission) {
-            ApplicationSubmission::where('discord_id', $applicationSubmission->discord_id)
+            $submissions = ApplicationSubmission::where('discord_id', $applicationSubmission->discord_id)
                 ->where('state', ApplicationSubmissionState::InProgress)
                 ->where('id', '!=', $applicationSubmission->id)
-                ->update(['state' => ApplicationSubmissionState::Cancelled]);
+                ->get();
+            $submissions->each(function ($submission) {
+                $submission->update(['state' => ApplicationSubmissionState::Cancelled]);
+                (new ApplicationActivityRepository)->submissionStatusUpdate($submission);
+            });
         });
+        (new ApplicationActivityRepository)->submissionCreated($applicationSubmission);
     }
 
     /**
@@ -32,12 +38,15 @@ class ApplicationSubmissionObserver
     {
         if ($applicationSubmission->state === ApplicationSubmissionState::Pending) {
             $this->applicationSubmissionRepository->sendApplicationSubmission($applicationSubmission);
-        }
-        if (
+            (new ApplicationActivityRepository)->submissionCompleted($applicationSubmission);
+        } elseif (
             $applicationSubmission->state === ApplicationSubmissionState::Accepted ||
             $applicationSubmission->state === ApplicationSubmissionState::Denied
         ) {
             $this->applicationSubmissionRepository->updateApplicationSubmission($applicationSubmission);
+            (new ApplicationActivityRepository)->submissionHandled($applicationSubmission);
+        } else {
+            (new ApplicationActivityRepository)->submissionStatusUpdate($applicationSubmission);
         }
     }
 
