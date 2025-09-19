@@ -29,6 +29,7 @@ class StoreRequest extends FormRequest
             'deny_message' => 'required|string',
             'confirmation_message' => 'required|string',
             'completion_message' => 'required|string',
+            'activity_channel' => 'nullable|string',
             'restricted_role_ids' => 'array',
             'restricted_role_ids.*' => 'string',
             'accepted_role_ids' => 'array',

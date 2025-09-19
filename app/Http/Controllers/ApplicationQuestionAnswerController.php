@@ -8,6 +8,7 @@ use App\Http\Requests\ApplicationQuestionAnswer\UpdateRequest;
 use App\Http\Resources\ApplicationQuestionAnswerResource;
 use App\Models\ApplicationQuestionAnswer;
 use App\Models\ApplicationSubmission;
+use App\Repositories\ApplicationActivityRepository;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -46,8 +47,10 @@ class ApplicationQuestionAnswerController extends Controller
         if ($applicationSubmission->state === ApplicationSubmissionState::Cancelled) {
             abort(403, 'Application was cancelled.');
         }
+        $applicationQuestionAnswer = ApplicationQuestionAnswer::create($data);
+        (new ApplicationActivityRepository)->questionAnswerCreated($applicationQuestionAnswer);
 
-        return new ApplicationQuestionAnswerResource(ApplicationQuestionAnswer::create($data));
+        return new ApplicationQuestionAnswerResource($applicationQuestionAnswer);
     }
 
     /**

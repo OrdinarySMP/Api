@@ -9,4 +9,15 @@ enum ApplicationSubmissionState: int
     case Accepted = 2;
     case Denied = 3;
     case Cancelled = 4;
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::InProgress => 'in progress',
+            self::Pending => 'pendig',
+            self::Accepted => 'accepted',
+            self::Denied => 'denied',
+            self::Cancelled => 'cancelled',
+        };
+    }
 }

@@ -45,4 +45,12 @@ class ApplicationQuestionAnswer extends Model
     {
         return $this->belongsTo(ApplicationQuestion::class)->withTrashed();
     }
+
+    /**
+     * @return BelongsTo<ApplicationSubmission, $this>
+     */
+    public function applicationSubmission(): BelongsTo
+    {
+        return $this->belongsTo(ApplicationSubmission::class);
+    }
 }
