@@ -436,23 +436,52 @@ class ApplicationSubmissionRepository
         $applicationSubmission->applicationQuestionAnswers
             ->each(function ($applicationQuestionAnswer) use ($thread) {
                 if (strlen($applicationQuestionAnswer->answer) > 1024) {
-                    Http::discordBot()
-                        ->post(
-                            '/channels/'.$thread['id'].'/messages',
-                            [
-                                'content' => "**{$applicationQuestionAnswer->applicationQuestion?->question}**\n{$applicationQuestionAnswer->answer}",
-                            ]
-                        );
+                    $limit = 2000 - strlen("**{$applicationQuestionAnswer->applicationQuestion?->question}**\n");
+                    foreach ($this->chunkTextBySpace($limit, $applicationQuestionAnswer->answer) as $chunk) {
+                        Http::discordBot()
+                            ->post(
+                                '/channels/'.$thread['id'].'/messages',
+                                [
+                                    'content' => "**{$applicationQuestionAnswer->applicationQuestion?->question}**\n{$chunk}",
+                                ]
+                            );
+                    }
                 } elseif ($applicationQuestionAnswer->attachments) {
-                    Http::discordBot()
-                        ->post(
-                            '/channels/'.$thread['id'].'/messages',
-                            [
-                                'content' => "**{$applicationQuestionAnswer->applicationQuestion?->question}**\n{$applicationQuestionAnswer->attachments}",
-                            ]
-                        );
+                    $limit = 2000 - strlen("**{$applicationQuestionAnswer->applicationQuestion?->question}**\n");
+                    foreach ($this->chunkTextBySpace($limit, $applicationQuestionAnswer->attachments) as $chunk) {
+                        Http::discordBot()
+                            ->post(
+                                '/channels/'.$thread['id'].'/messages',
+                                [
+                                    'content' => "**{$applicationQuestionAnswer->applicationQuestion?->question}**\n{$chunk}",
+                                ]
+                            );
+                    }
                 }
             });
+    }
+
+    /**
+     * @return string[]
+     */
+    private function chunkTextBySpace(int $limit, string $text): array
+    {
+        $answer = explode(' ', $text);
+        $current = '';
+        $chunks = [];
+        foreach ($answer as $answerPart) {
+            $nextCurrent = trim(implode(' ', [$current, $answerPart]));
+            if (strlen($nextCurrent) > $limit) {
+                $chunks[] = $current;
+                $current = '';
+            }
+            $current = trim(implode(' ', [$current, $answerPart]));
+        }
+        if ($current !== '') {
+            $chunks[] = $current;
+        }
+
+        return $chunks;
     }
 
     /**
