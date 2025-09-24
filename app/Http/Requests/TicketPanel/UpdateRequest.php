@@ -23,7 +23,7 @@ class UpdateRequest extends FormRequest
     {
         return [
             'title' => 'required|string|max:100',
-            'message' => 'required|string|max:100',
+            'message' => 'required|string|max:1000',
             'embed_color' => 'required|string|max:7',
             'channel_id' => 'required|string|max:20',
         ];
