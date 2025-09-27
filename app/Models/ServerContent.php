@@ -34,6 +34,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static Builder<static>|ServerContent whereUpdatedAt($value)
  * @method static Builder<static>|ServerContent whereUrl($value)
  *
+ * @property bool $is_active
+ *
+ * @method static Builder<static>|ServerContent active()
+ * @method static Builder<static>|ServerContent whereIsActive($value)
+ *
  * @mixin \Eloquent
  */
 class ServerContent extends Model

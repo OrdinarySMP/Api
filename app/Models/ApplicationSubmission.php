@@ -46,6 +46,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationSubmission whereState($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationSubmission whereSubmittedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationSubmission whereUpdatedAt($value)
+ * @method static Builder<static>|ApplicationSubmission completed()
  *
  * @mixin \Eloquent
  */
@@ -58,6 +59,7 @@ class ApplicationSubmission extends Model
 
     protected $casts = [
         'state' => ApplicationSubmissionState::class,
+        'submitted_at' => 'datetime',
     ];
 
     /**

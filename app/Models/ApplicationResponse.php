@@ -35,6 +35,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static Builder<static>|ApplicationResponse accepted()
  * @method static Builder<static>|ApplicationResponse denied()
  *
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ *
+ * @method static Builder<static>|ApplicationResponse onlyTrashed()
+ * @method static Builder<static>|ApplicationResponse whereDeletedAt($value)
+ * @method static Builder<static>|ApplicationResponse withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|ApplicationResponse withoutTrashed()
+ *
  * @mixin \Eloquent
  */
 class ApplicationResponse extends Model

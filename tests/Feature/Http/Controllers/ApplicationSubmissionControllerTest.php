@@ -5,6 +5,7 @@ use App\Models\Application;
 use App\Models\ApplicationResponse;
 use App\Models\ApplicationSubmission;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 
 beforeEach(function () {
     Http::fake([
@@ -53,7 +54,10 @@ test('can create application submission', function () {
     $this->actingAs($user)
         ->postJson(route('application-submission.store'), $data)
         ->assertCreated()
-        ->assertJson(['data' => $data]);
+        ->assertJson(['data' => [
+            ...collect($data)->except('submitted_at')->toArray(),
+            'submitted_at' => Carbon::parse('2024-12-24 12:00:00')->format('Y-m-d\TH:i:s.u\Z'),
+        ]]);
 
     $this->assertDatabaseHas('application_submissions', $data);
 });
@@ -76,7 +80,10 @@ test('can update application submission', function () {
     $this->actingAs($user)
         ->patchJson(route('application-submission.update', $applicationSubmission), $data)
         ->assertOk()
-        ->assertJson(['data' => $data]);
+        ->assertJson(['data' => [
+            ...collect($data)->except('submitted_at')->toArray(),
+            'submitted_at' => Carbon::parse('2024-12-24 12:00:00')->format('Y-m-d\TH:i:s.u\Z'),
+        ]]);
 
     $this->assertDatabaseHas('application_submissions', $data);
 });

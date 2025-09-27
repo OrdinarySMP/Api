@@ -255,7 +255,9 @@ class ApplicationSubmissionRepository
             ->where('application_id', $applicationSubmission->application_id)
             ->count();
         $joinedAt = Carbon::parse($member['joined_at'])->timestamp;
-        $duration = now()->diffForHumans($applicationSubmission->created_at, \Carbon\CarbonInterface::DIFF_ABSOLUTE);
+
+        $submittedAt = ($applicationSubmission->submitted_at ?? now());
+        $duration = $submittedAt->diffForHumans($applicationSubmission->created_at, \Carbon\CarbonInterface::DIFF_ABSOLUTE);
         $tag = isset($member['user']['primary_guild'], $member['user']['primary_guild']['tag']) ? $member['user']['primary_guild']['tag'] : '---';
         $stats =
             "**User ID:** {$applicationSubmission->discord_id}\n".

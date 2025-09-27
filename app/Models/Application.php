@@ -64,6 +64,30 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property-read int|null $ping_roles_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $restrictedRoles
  * @property-read int|null $restricted_roles_count
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property string|null $embed_channel_id
+ * @property string|null $embed_title
+ * @property string|null $embed_description
+ * @property string|null $embed_color
+ * @property string|null $embed_button_text
+ * @property int|null $embed_button_color
+ * @property string|null $activity_channel
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $requiredRoles
+ * @property-read int|null $required_roles_count
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereActivityChannel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereEmbedButtonColor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereEmbedButtonText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereEmbedChannelId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereEmbedColor($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereEmbedDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereEmbedTitle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Application withoutTrashed()
  *
  * @mixin \Eloquent
  */

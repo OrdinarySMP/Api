@@ -29,6 +29,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestion whereUpdatedAt($value)
  *
  * @property-read \App\Models\Application|null $application
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestion onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestion whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestion withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestion withoutTrashed()
  *
  * @mixin \Eloquent
  */
