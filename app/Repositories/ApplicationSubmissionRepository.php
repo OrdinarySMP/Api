@@ -15,12 +15,13 @@ class ApplicationSubmissionRepository
     public function sendApplicationSubmission(ApplicationSubmission $applicationSubmission): bool
     {
         $pingRoles = $applicationSubmission->application?->pingRoles->map(fn ($pingRole) => "<@&$pingRole->role_id>")->join(', ') ?? '';
+        $message = "<@{$applicationSubmission->discord_id}>\`s application for: `{$applicationSubmission->application?->name}`";
 
         $response = Http::discordBot()
             ->post(
                 '/channels/'.$applicationSubmission->application?->log_channel.'/messages',
                 [
-                    'content' => $pingRoles,
+                    'content' => "{$pingRoles}\n{$message}",
                     ...$this->getMessageData($applicationSubmission),
                 ]
             );
@@ -82,7 +83,7 @@ class ApplicationSubmissionRepository
                 ]
             );
         if (! $response->ok()) {
-            Log::error('Could not update submission:', $response->json);
+            Log::error('Could not update submission:', $response->json());
         }
 
         return $response->ok();
@@ -156,6 +157,12 @@ class ApplicationSubmissionRepository
         $tooLongField = $this->getTooLongField();
         $applicationQuestionAnswers = $applicationSubmission->applicationQuestionAnswers;
         $name = $member['user']['global_name'] ?? $member['user']['username'];
+
+        $applicationSubmissionCount = ApplicationSubmission::completed()
+            ->where('discord_id', $applicationSubmission->discord_id)
+            ->where('application_id', $applicationSubmission->application_id)
+            ->count();
+
         $title = "{$name}`s application for {$applicationSubmission->application?->name}";
 
         if ($member['user']['avatar']) {
@@ -168,6 +175,7 @@ class ApplicationSubmissionRepository
         if ($applicationQuestionAnswers->count() > 25) {
             return [
                 'title' => $title,
+                'description' => "Application Number: **{$applicationSubmissionCount}**",
                 'fields' => [$tooLongField, $statsField],
                 'timestamp' => now()->toIso8601String(),
                 'color' => $this->getEmbedColor($applicationSubmission),
@@ -205,6 +213,7 @@ class ApplicationSubmissionRepository
         if ($totalLenght > 6000) {
             return [
                 'title' => $title,
+                'description' => "Application Number: **{$applicationSubmissionCount}**",
                 'fields' => [$tooLongField, $statsField],
                 'timestamp' => now()->toIso8601String(),
                 'color' => $this->getEmbedColor($applicationSubmission),
@@ -216,6 +225,7 @@ class ApplicationSubmissionRepository
 
         return [
             'title' => $title,
+            'description' => "Application Number: **{$applicationSubmissionCount}**",
             'fields' => $fields,
             'timestamp' => now()->toIso8601String(),
             'color' => $this->getEmbedColor($applicationSubmission),
