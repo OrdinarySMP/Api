@@ -48,7 +48,7 @@ class DiscordController extends Controller
             'discord_refresh_token' => $user->refreshToken,
         ]);
 
-        Auth::guard('web')->login($user);
+        Auth::guard('web')->login($user, true);
 
         $request->session()->regenerate();
 
