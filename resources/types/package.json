@@ -1,0 +1,17 @@
+{
+    "name": "@OrdinarySMP/api-types",
+    "version": "0.0.1",
+    "types": "./index.d.ts",
+    "type": "module",
+    "files": [
+        "index.d.ts"
+    ],
+    "main": "./index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/OrdinarySMP/Api.git"
+    },
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    }
+}

@@ -49,7 +49,7 @@ class ApplicationResponse extends Model
     /** @use HasFactory<\Database\Factories\ApplicationResponseFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     protected $casts = [
         'type' => ApplicationResponseType::class,

@@ -30,7 +30,7 @@ class TicketButtonPingRole extends Model
     /** @use HasFactory<\Database\Factories\TicketTeamRoleFactory> */
     use HasFactory;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     /**
      * @return BelongsTo<TicketButton, $this>

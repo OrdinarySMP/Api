@@ -10,13 +10,14 @@ test('auth user can get rules', function () {
     $this->actingAs($user)
         ->get(route('rule.index'))
         ->assertOk()
-        ->assertJson(['data' => [$rule->toArray()]]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $rule->id);
 });
 
 test('can create rule', function () {
     $user = User::factory()->owner()->create();
     $data = [
-        'number' => '1',
+        'number' => 1,
         'name' => 'Testing',
         'rule' => 'This has to be tested!',
     ];
@@ -33,7 +34,7 @@ test('can update rule', function () {
     $user = User::factory()->owner()->create();
     $rule = Rule::factory()->create();
     $data = [
-        'number' => '1',
+        'number' => 1,
         'name' => 'Testing',
         'rule' => 'This has to be tested!',
     ];

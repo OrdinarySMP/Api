@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TicketState;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property int $ticket_button_id
  * @property string|null $channel_id
- * @property int $state
+ * @property TicketState $state
  * @property string $created_by_discord_user_id
  * @property string|null $closed_by_discord_user_id
  * @property string|null $closed_reason
@@ -42,7 +43,11 @@ class Ticket extends Model
     /** @use HasFactory<\Database\Factories\TicketFactory> */
     use HasFactory;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    protected $casts = [
+        'state' => TicketState::class,
+    ];
 
     /**
      * @return BelongsTo<TicketButton, $this>

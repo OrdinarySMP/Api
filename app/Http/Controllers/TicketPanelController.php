@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\TicketPanelData;
 use App\Http\Requests\TicketPanel\StoreRequest;
 use App\Http\Requests\TicketPanel\UpdateRequest;
-use App\Http\Resources\TicketPanelResource;
 use App\Models\TicketPanel;
 use App\Repositories\TicketPanelRepository;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Spatie\LaravelData\DataCollection;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -19,8 +20,10 @@ class TicketPanelController extends Controller
 
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, TicketPanelData>|DataCollection<array-key, TicketPanelData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection|DataCollection
     {
         if (! request()->user()?->can('ticketPanel.read')) {
             abort(403);
@@ -31,25 +34,29 @@ class TicketPanelController extends Controller
             ])
             ->getOrPaginate();
 
-        return TicketPanelResource::collection($ticketPanels);
+        if (request()->has('full')) {
+            return TicketPanelData::collect($ticketPanels, DataCollection::class)->wrap('data');
+        }
+
+        return TicketPanelData::collect($ticketPanels, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): TicketPanelResource
+    public function store(StoreRequest $request): TicketPanelData
     {
-        return new TicketPanelResource(TicketPanel::create($request->validated()));
+        return TicketPanelData::from(TicketPanel::create($request->validated()))->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, TicketPanel $panel): TicketPanelResource
+    public function update(UpdateRequest $request, TicketPanel $panel): TicketPanelData
     {
         $panel->update($request->validated());
 
-        return new TicketPanelResource($panel);
+        return TicketPanelData::from($panel)->wrap('data');
     }
 
     /**

@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\ApplicationSubmissionData;
 use App\Http\Requests\ApplicationSubmission\StoreRequest;
 use App\Http\Requests\ApplicationSubmission\UpdateRequest;
-use App\Http\Resources\ApplicationSubmissionResource;
 use App\Models\ApplicationSubmission;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Spatie\LaravelData\DataCollection;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -16,8 +17,10 @@ class ApplicationSubmissionController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, ApplicationSubmissionData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         if (! request()->user()?->can('applicationSubmission.read')) {
             abort(403);
@@ -42,25 +45,25 @@ class ApplicationSubmissionController extends Controller
             ])
             ->getOrPaginate();
 
-        return ApplicationSubmissionResource::collection($applicationSubmissions);
+        return ApplicationSubmissionData::collect($applicationSubmissions, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): ApplicationSubmissionResource
+    public function store(StoreRequest $request): ApplicationSubmissionData
     {
-        return new ApplicationSubmissionResource(ApplicationSubmission::create($request->validated()));
+        return ApplicationSubmissionData::from(ApplicationSubmission::create($request->validated()))->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, ApplicationSubmission $applicationSubmission): ApplicationSubmissionResource
+    public function update(UpdateRequest $request, ApplicationSubmission $applicationSubmission): ApplicationSubmissionData
     {
         $applicationSubmission->update($request->validated());
 
-        return new ApplicationSubmissionResource($applicationSubmission->refresh());
+        return ApplicationSubmissionData::from($applicationSubmission->refresh())->wrap('data');
     }
 
     /**
@@ -82,12 +85,15 @@ class ApplicationSubmissionController extends Controller
         return $applicationSubmission->delete() ?? false;
     }
 
-    public function history(ApplicationSubmission $applicationSubmission): AnonymousResourceCollection
+    /**
+     * @return DataCollection<array-key, ApplicationSubmissionData>
+     */
+    public function history(ApplicationSubmission $applicationSubmission): DataCollection
     {
         $history = ApplicationSubmission::with('application', 'applicationResponse')
             ->where('discord_id', $applicationSubmission->discord_id)
             ->get();
 
-        return ApplicationSubmissionResource::collection($history);
+        return ApplicationSubmissionData::collect($history, DataCollection::class)->wrap('data');
     }
 }

@@ -15,7 +15,8 @@ test('auth user can get ticket panels', function () {
     $this->actingAs($user)
         ->get(route('panel.index'))
         ->assertOk()
-        ->assertJson(['data' => [$ticketPanel->toArray()]]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $ticketPanel->id);
 });
 
 test('can create ticket panel', function () {

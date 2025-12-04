@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $id
  * @property string $question
  * @property int $order
- * @property int $is_active
+ * @property bool $is_active
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int $application_id
@@ -43,7 +43,7 @@ class ApplicationQuestion extends Model
     /** @use HasFactory<\Database\Factories\ApplicationQuestionFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     protected $casts = [
         'is_active' => 'boolean',

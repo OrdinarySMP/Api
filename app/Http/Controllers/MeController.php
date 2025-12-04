@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\UserData;
 use App\Repositories\DiscordRepository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -22,7 +23,7 @@ class MeController extends Controller
     {
         $user = $request->user();
         if (! $user) {
-            return response()->json();
+            return response()->json(null, 204);
         }
 
         $discordGuildUser = $this->discordRepository->currentUser();
@@ -51,10 +52,6 @@ class MeController extends Controller
 
         $user->syncRoles($roles);
 
-        return response()->json([
-            ...$user->toArray(),
-            'is_owner' => $guild['owner_id'] === $user->discord_id,
-            'permissions' => $user->getPermissionsViaRoles()->pluck('name'),
-        ]);
+        return response()->json(UserData::from($user, $guild['owner_id'] === $user->discord_id));
     }
 }

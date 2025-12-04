@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\ApplicationData;
 use App\Enums\ApplicationRoleType;
 use App\Http\Requests\Application\StoreRequest;
 use App\Http\Requests\Application\UpdateRequest;
-use App\Http\Resources\ApplicationResource;
 use App\Models\Application;
 use App\Models\ApplicationRole;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Http;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -17,8 +17,10 @@ class ApplicationController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, ApplicationData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         if (! request()->user()?->can('application.read')) {
             abort(403);
@@ -48,13 +50,13 @@ class ApplicationController extends Controller
             ])
             ->getOrPaginate();
 
-        return ApplicationResource::collection($applications);
+        return ApplicationData::collect($applications, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): ApplicationResource
+    public function store(StoreRequest $request): ApplicationData
     {
         $data = $request->validated();
         $data = [
@@ -167,13 +169,13 @@ class ApplicationController extends Controller
             ApplicationRole::insert($requiredRole->toArray());
         }
 
-        return new ApplicationResource($application);
+        return ApplicationData::from($application)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, Application $application): ApplicationResource
+    public function update(UpdateRequest $request, Application $application): ApplicationData
     {
         $data = $request->validated();
         $application->update($data);
@@ -290,7 +292,7 @@ class ApplicationController extends Controller
             ApplicationRole::insert($requiredRole->toArray());
         }
 
-        return new ApplicationResource($application);
+        return ApplicationData::from($application)->wrap('data');
     }
 
     /**

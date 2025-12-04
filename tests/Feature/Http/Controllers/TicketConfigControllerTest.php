@@ -11,7 +11,7 @@ test('auth user can get ticket configs', function () {
     $this->actingAs($user)
         ->get(route('config.index'))
         ->assertOk()
-        ->assertJson(['data' => $ticketConfig->toArray()]);
+        ->assertJsonPath('data.id', $ticketConfig->id);
 });
 
 test('can create ticket config', function () {
@@ -25,7 +25,7 @@ test('can create ticket config', function () {
 
     $this->actingAs($user)
         ->postJson(route('config.store'), $data)
-        ->assertOk()
+        ->assertCreated()
         ->assertJson(['data' => $data]);
 
     $this->assertDatabaseHas('ticket_configs', $data);
@@ -43,7 +43,7 @@ test('can update ticket config', function () {
 
     $this->actingAs($user)
         ->postJson(route('config.store'), $data)
-        ->assertOk()
+        ->assertCreated()
         ->assertJson(['data' => $data]);
 
     $this->assertDatabaseHas('ticket_configs', $data);

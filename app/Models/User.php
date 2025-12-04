@@ -48,6 +48,10 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, $guard = null)
  *
+ * @property string|null $remember_token
+ *
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereRememberToken($value)
+ *
  * @mixin \Eloquent
  */
 class User extends Authenticatable
@@ -55,7 +59,7 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     /**
      * The attributes that should be hidden for serialization.

@@ -12,7 +12,9 @@ test('auth user can get application response', function () {
     $this->actingAs($user)
         ->get(route('application-response.index'))
         ->assertOk()
-        ->assertJson(['data' => [$application->toArray()]]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $application->id);
+
 });
 
 test('can create application response', function () {

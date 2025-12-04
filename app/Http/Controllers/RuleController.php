@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\RuleData;
 use App\Http\Requests\Rule\StoreRequest;
 use App\Http\Requests\Rule\UpdateRequest;
-use App\Http\Resources\RuleResource;
 use App\Models\Rule;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -14,8 +14,10 @@ class RuleController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, RuleData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         if (! request()->user()?->can('rule.read')) {
             abort(403);
@@ -29,25 +31,25 @@ class RuleController extends Controller
             ])
             ->getOrPaginate();
 
-        return RuleResource::collection($rules);
+        return RuleData::collect($rules, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): RuleResource
+    public function store(StoreRequest $request): RuleData
     {
-        return new RuleResource(Rule::create($request->validated()));
+        return RuleData::from(Rule::create($request->validated()))->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, Rule $rule): RuleResource
+    public function update(UpdateRequest $request, Rule $rule): RuleData
     {
         $rule->update($request->validated());
 
-        return new RuleResource($rule->refresh());
+        return RuleData::from($rule->refresh())->wrap('data');
     }
 
     /**

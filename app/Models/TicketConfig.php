@@ -31,5 +31,5 @@ class TicketConfig extends Model
     /** @use HasFactory<\Database\Factories\TicketConfigFactory> */
     use HasFactory;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 }

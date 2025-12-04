@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\Requests\CreateTicketRequest;
+use App\Data\TicketData;
 use App\Enums\TicketState;
 use App\Http\Requests\Ticket\CloseRequest;
-use App\Http\Requests\Ticket\StoreRequest;
-use App\Http\Resources\TicketResource;
 use App\Models\Ticket;
 use App\Models\TicketButton;
 use App\Repositories\TicketRepository;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Http;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -22,8 +22,10 @@ class TicketController extends Controller
 
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, TicketData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         if (! request()->user()?->can('ticket.read')) {
             abort(403);
@@ -37,28 +39,24 @@ class TicketController extends Controller
             ])
             ->getOrPaginate();
 
-        return TicketResource::collection($tickets);
+        return TicketData::collect($tickets, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): TicketResource
+    public function store(CreateTicketRequest $request): TicketData
     {
         /**
          * @var TicketButton $ticketButton
          */
-        $ticketButton = TicketButton::find($request->validated('ticket_button_id'));
-        /**
-         * @var array{ticket_button_id:string,created_by_discord_user_id:string}
-         */
-        $data = $request->validated();
-        $ticket = $this->ticketRepository->createForButton($ticketButton, $data);
+        $ticketButton = TicketButton::find($request->ticket_button_id);
+        $ticket = $this->ticketRepository->createForButton($ticketButton, $request);
 
         $this->ticketRepository->pingRoles($ticket);
         $this->ticketRepository->sendInitialMessage($ticket);
 
-        return new TicketResource($ticket);
+        return TicketData::from($ticket)->wrap('data');
     }
 
     public function close(CloseRequest $request, Ticket $ticket): bool

@@ -24,7 +24,7 @@ test('can create ticket transcript', function () {
 
     $this->actingAs($user)
         ->postJson(route('transcript.store'), $data)
-        ->assertOk()
+        ->assertCreated()
         ->assertJson(['data' => $data]);
 
     $this->assertDatabaseHas('ticket_transcripts', $data);
@@ -50,7 +50,7 @@ test('can udpate ticket transcript', function () {
 
     $this->actingAs($user)
         ->postJson(route('transcript.store'), $data)
-        ->assertOk()
+        ->assertCreated()
         ->assertJson(['data' => $data]);
 
     $this->assertDatabaseHas('ticket_transcripts', [

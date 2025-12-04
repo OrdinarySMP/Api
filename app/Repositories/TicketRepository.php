@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Data\Requests\CreateTicketRequest;
 use App\Enums\DiscordButton;
 use App\Enums\TicketState;
 use App\Models\Ticket;
@@ -25,10 +26,7 @@ class TicketRepository
         return Str::replace('%id%', "$ticket->id", $ticket->ticketButton->naming_scheme);
     }
 
-    /**
-     * @param  array{ticket_button_id:string,created_by_discord_user_id:string}  $data
-     */
-    public function createForButton(TicketButton $ticketButton, array $data): Ticket
+    public function createForButton(TicketButton $ticketButton, CreateTicketRequest $request): Ticket
     {
         $roles = $this->discordRepository->roles();
         /**
@@ -37,7 +35,8 @@ class TicketRepository
         $everyoneRole = $roles->firstWhere('name', '@everyone');
 
         $ticket = Ticket::create([
-            ...$data,
+            'ticket_button_id' => $request->ticket_button_id,
+            'created_by_discord_user_id' => $request->created_by_discord_user_id,
             'state' => TicketState::Open,
         ]);
 
@@ -69,7 +68,7 @@ class TicketRepository
                     'deny' => 1 << 10, // view channel permission
                 ],
                 [
-                    'id' => $data['created_by_discord_user_id'],
+                    'id' => $request->created_by_discord_user_id,
                     'type' => 1, // user
                     'allow' => 1 << 10, // view channel permission
                 ],
