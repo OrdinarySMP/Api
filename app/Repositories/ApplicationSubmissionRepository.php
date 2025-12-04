@@ -2,6 +2,7 @@
 
 namespace App\Repositories;
 
+use App\Data\Discord\MemberData;
 use App\Enums\ApplicationSubmissionState;
 use App\Enums\DiscordButton;
 use App\Models\ApplicationSubmission;
@@ -156,7 +157,7 @@ class ApplicationSubmissionRepository
         $statsField = $this->getStatsField($applicationSubmission, $member);
         $tooLongField = $this->getTooLongField();
         $applicationQuestionAnswers = $applicationSubmission->applicationQuestionAnswers;
-        $name = $member['user']['global_name'] ?? $member['user']['username'];
+        $name = $member->user->global_name ?? $member->user?->username;
 
         $applicationSubmissionCount = ApplicationSubmission::completed()
             ->where('discord_id', $applicationSubmission->discord_id)
@@ -165,10 +166,10 @@ class ApplicationSubmissionRepository
 
         $title = "{$name}`s application for {$applicationSubmission->application?->name}";
 
-        if ($member['user']['avatar']) {
-            $avatar = "https://cdn.discordapp.com/avatars/{$member['user']['id']}/{$member['user']['avatar']}.png";
+        if ($member->user?->avatar) {
+            $avatar = "https://cdn.discordapp.com/avatars/{$member->user->id}/{$member->user->avatar}.png";
         } else {
-            $index = ($member['user']['id'] >> 22) % 6;
+            $index = ((int) $member->user?->id >> 22) % 6;
             $avatar = "https://cdn.discordapp.com/embed/avatars/{$index}.png";
         }
 
@@ -235,14 +236,17 @@ class ApplicationSubmissionRepository
         ];
     }
 
-    /**
-     * @return array<mixed>
-     */
-    public function getMember(ApplicationSubmission $applicationSubmission): array
+    public function getMember(ApplicationSubmission $applicationSubmission): MemberData
     {
         $discordRepository = new DiscordRepository;
 
-        return $discordRepository->getGuildMemberById($applicationSubmission->discord_id);
+        $member = $discordRepository->getGuildMemberById($applicationSubmission->discord_id);
+        if (! $member) {
+            Log::error("Could not find member for user id: {$applicationSubmission->discord_id}.");
+            throw new \Error("Could not find member for user id: {$applicationSubmission->discord_id}.");
+        }
+
+        return $member;
     }
 
     public function getEmbedColor(ApplicationSubmission $applicationSubmission): string
@@ -255,23 +259,22 @@ class ApplicationSubmissionRepository
     }
 
     /**
-     * @param  array<mixed>  $member
      * @return array{name:string, value:string}
      */
-    private function getStatsField(ApplicationSubmission $applicationSubmission, array $member): array
+    private function getStatsField(ApplicationSubmission $applicationSubmission, MemberData $member): array
     {
         $applicationSubmissionCount = ApplicationSubmission::completed()
             ->where('discord_id', $applicationSubmission->discord_id)
             ->where('application_id', $applicationSubmission->application_id)
             ->count();
-        $joinedAt = Carbon::parse($member['joined_at'])->timestamp;
+        $joinedAt = Carbon::parse($member->joined_at)->timestamp;
 
         $submittedAt = ($applicationSubmission->submitted_at ?? now());
         $duration = $submittedAt->diffForHumans($applicationSubmission->created_at, \Carbon\CarbonInterface::DIFF_ABSOLUTE);
-        $tag = isset($member['user']['primary_guild'], $member['user']['primary_guild']['tag']) ? $member['user']['primary_guild']['tag'] : '---';
+        $tag = $member->user?->primary_guild?->tag ? $member->user->primary_guild->tag : '---';
         $stats =
             "**User ID:** {$applicationSubmission->discord_id}\n".
-            "**Username:** {$member['user']['username']}\n".
+            "**Username:** {$member->user?->username}\n".
             "**User Mention:** <@{$applicationSubmission->discord_id}>\n".
             "**Tag:** {$tag}\n".
             "**Application Duration:** {$duration}\n".
@@ -438,7 +441,7 @@ class ApplicationSubmissionRepository
             ->post(
                 "/channels/{$applicationSubmission->channel_id}/messages/{$applicationSubmission->message_id}/threads",
                 [
-                    'name' => "{$applicationSubmission->application?->name} - {$member['user']['username']}",
+                    'name' => "{$applicationSubmission->application?->name} - {$member->user?->username}",
                 ]
             );
         $thread = $threadResponse->json();

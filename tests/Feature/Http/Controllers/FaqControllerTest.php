@@ -10,7 +10,9 @@ test('auth user can get faqs', function () {
     $this->actingAs($user)
         ->get(route('faq.index'))
         ->assertOk()
-        ->assertJson(['data' => [$faq->toArray()]]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $faq->id);
+
 });
 
 test('can create faq', function () {

@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\ReactionRoleData;
 use App\Http\Requests\ReactionRole\StoreRequest;
 use App\Http\Requests\ReactionRole\UpdateRequest;
-use App\Http\Resources\ReactionRoleResource;
 use App\Models\ReactionRole;
 use App\Rules\DiscordMessageRule;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Http;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -16,8 +16,10 @@ class ReactionRoleController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, ReactionRoleData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         if (! request()->user()?->can('reactionRole.read')) {
             abort(403);
@@ -31,13 +33,13 @@ class ReactionRoleController extends Controller
             ])
             ->getOrPaginate();
 
-        return ReactionRoleResource::collection($reactionRoles);
+        return ReactionRoleData::collect($reactionRoles, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): ReactionRoleResource
+    public function store(StoreRequest $request): ReactionRoleData
     {
         [, $channelId, $messageId] = DiscordMessageRule::splitMessageLink($request->validated('message_link'));
         /**
@@ -55,17 +57,17 @@ class ReactionRoleController extends Controller
             ], 400);
         }
 
-        return new ReactionRoleResource(ReactionRole::create([
+        return ReactionRoleData::from(ReactionRole::create([
             ...$request->validated(),
             'message_id' => $messageId,
             'channel_id' => $channelId,
-        ]));
+        ]))->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, ReactionRole $reactionRole): ReactionRoleResource
+    public function update(UpdateRequest $request, ReactionRole $reactionRole): ReactionRoleData
     {
         [, $channelId, $messageId] = DiscordMessageRule::splitMessageLink($request->validated('message_link'));
         $reactionRole->update([
@@ -74,7 +76,7 @@ class ReactionRoleController extends Controller
             'channel_id' => $channelId,
         ]);
 
-        return new ReactionRoleResource($reactionRole->refresh());
+        return ReactionRoleData::from($reactionRole->refresh())->wrap('data');
     }
 
     /**

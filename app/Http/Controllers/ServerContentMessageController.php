@@ -2,21 +2,24 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\ServerContentMessageData;
 use App\Http\Requests\ServerContentMessage\CreateRequest;
 use App\Models\ServerContentMessage;
 
 class ServerContentMessageController extends Controller
 {
-    public function index(): ?ServerContentMessage
+    public function index(): ?ServerContentMessageData
     {
         if (! request()->user()?->can('serverContentMessage.read')) {
             abort(403);
         }
 
-        return ServerContentMessage::where('server_id', config('services.discord.server_id'))->first();
+        $messages = ServerContentMessage::where('server_id', config('services.discord.server_id'))->first();
+
+        return $messages ? ServerContentMessageData::from($messages) : null;
     }
 
-    public function store(CreateRequest $request): ServerContentMessage
+    public function store(CreateRequest $request): ServerContentMessageData
     {
         ServerContentMessage::upsert([
             [
@@ -25,6 +28,8 @@ class ServerContentMessageController extends Controller
             ],
         ], uniqueBy: ['server_id'], update: ['heading', 'not_recommended', 'recommended']);
 
-        return ServerContentMessage::where('server_id', config('services.discord.server_id'))->firstOrFail();
+        return ServerContentMessageData::from(
+            ServerContentMessage::where('server_id', config('services.discord.server_id'))->firstOrFail()
+        );
     }
 }

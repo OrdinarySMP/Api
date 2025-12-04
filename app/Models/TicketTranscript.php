@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $embeds
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string|null $deleted_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  * @property-read \App\Models\Ticket|null $ticket
  *
  * @method static \Database\Factories\TicketTranscriptFactory factory($count = null, $state = [])
@@ -41,7 +41,11 @@ class TicketTranscript extends Model
     /** @use HasFactory<\Database\Factories\TicketTranscriptFactory> */
     use HasFactory;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    protected $casts = [
+        'deleted_at' => 'datetime',
+    ];
 
     /**
      * @return BelongsTo<Ticket, $this>

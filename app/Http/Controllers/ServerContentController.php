@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\ServerContentData;
 use App\Http\Requests\ServerContent\StoreRequest;
 use App\Http\Requests\ServerContent\UpdateRequest;
-use App\Http\Resources\ServerContentResource;
 use App\Models\ServerContent;
 use App\Models\ServerContentMessage;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -17,13 +17,15 @@ class ServerContentController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, ServerContentData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         if (! request()->user()?->can('serverContent.read')) {
             abort(403);
         }
-        $serverContentResources = QueryBuilder::for(ServerContent::class)
+        $serverContent = QueryBuilder::for(ServerContent::class)
             ->allowedFilters([
                 'name',
                 AllowedFilter::exact('is_recommended'),
@@ -32,25 +34,25 @@ class ServerContentController extends Controller
             ])
             ->getOrPaginate();
 
-        return ServerContentResource::collection($serverContentResources);
+        return ServerContentData::collect($serverContent, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): ServerContentResource
+    public function store(StoreRequest $request): ServerContentData
     {
-        return new ServerContentResource(ServerContent::create($request->validated()));
+        return ServerContentData::from(ServerContent::create($request->validated()))->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, ServerContent $serverContent): ServerContentResource
+    public function update(UpdateRequest $request, ServerContent $serverContent): ServerContentData
     {
         $serverContent->update($request->validated());
 
-        return new ServerContentResource($serverContent->refresh());
+        return ServerContentData::from($serverContent->refresh())->wrap('data');
     }
 
     /**

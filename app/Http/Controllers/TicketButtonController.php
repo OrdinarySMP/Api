@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\TicketButtonData;
 use App\Http\Requests\TicketButton\StoreRequest;
 use App\Http\Requests\TicketButton\UpdateRequest;
-use App\Http\Resources\TicketButtonResource;
 use App\Models\TicketButton;
 use App\Models\TicketButtonPingRole;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -15,8 +15,10 @@ class TicketButtonController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, TicketButtonData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         if (! request()->user()?->can('ticketButton.read')) {
             abort(403);
@@ -30,13 +32,13 @@ class TicketButtonController extends Controller
             ])
             ->getOrPaginate();
 
-        return TicketButtonResource::collection($ticketButtons);
+        return TicketButtonData::collect($ticketButtons, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): TicketButtonResource
+    public function store(StoreRequest $request): TicketButtonData
     {
         $data = $request->validated();
         $button = TicketButton::create($data);
@@ -53,13 +55,13 @@ class TicketButtonController extends Controller
             TicketButtonPingRole::insert($ticketButtonPingRoles->toArray());
         }
 
-        return new TicketButtonResource($button);
+        return TicketButtonData::from($button)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, TicketButton $button): TicketButtonResource
+    public function update(UpdateRequest $request, TicketButton $button): TicketButtonData
     {
         $data = $request->validated();
         $button->update($data);
@@ -77,7 +79,7 @@ class TicketButtonController extends Controller
             TicketButtonPingRole::insert($ticketButtonPingRoles->toArray());
         }
 
-        return new TicketButtonResource($button);
+        return TicketButtonData::from($button)->wrap('data');
     }
 
     /**

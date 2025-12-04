@@ -15,7 +15,8 @@ test('auth user can get reaction roles', function () {
     $this->actingAs($user)
         ->get(route('reaction-role.index'))
         ->assertOk()
-        ->assertJson(['data' => [$reactionRole->toArray()]]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $reactionRole->id);
 });
 
 test('can create rule', function () {

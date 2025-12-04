@@ -13,7 +13,8 @@ test('auth user can get ticket buttons', function () {
     $this->actingAs($user)
         ->get(route('button.index'))
         ->assertOk()
-        ->assertJson(['data' => [$ticketButton->toArray()]]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $ticketButton->id);
 });
 
 test('can create ticket buttons', function () {

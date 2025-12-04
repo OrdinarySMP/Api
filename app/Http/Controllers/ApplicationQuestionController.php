@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\ApplicationQuestionData;
 use App\Http\Requests\ApplicationQuestion\StoreRequest;
 use App\Http\Requests\ApplicationQuestion\UpdateRequest;
-use App\Http\Resources\ApplicationQuestionResource;
 use App\Models\ApplicationQuestion;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -14,8 +14,10 @@ class ApplicationQuestionController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, ApplicationQuestionData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         if (! request()->user()?->can('applicationQuestion.read')) {
             abort(403);
@@ -30,25 +32,25 @@ class ApplicationQuestionController extends Controller
             ])
             ->getOrPaginate();
 
-        return ApplicationQuestionResource::collection($applicationQuestion);
+        return ApplicationQuestionData::collect($applicationQuestion, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): ApplicationQuestionResource
+    public function store(StoreRequest $request): ApplicationQuestionData
     {
-        return new ApplicationQuestionResource(ApplicationQuestion::create($request->validated()));
+        return ApplicationQuestionData::from(ApplicationQuestion::create($request->validated()))->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, ApplicationQuestion $applicationQuestion): ApplicationQuestionResource
+    public function update(UpdateRequest $request, ApplicationQuestion $applicationQuestion): ApplicationQuestionData
     {
         $applicationQuestion->update($request->validated());
 
-        return new ApplicationQuestionResource($applicationQuestion->refresh());
+        return ApplicationQuestionData::from($applicationQuestion->refresh())->wrap('data');
     }
 
     /**

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\TicketTeamData;
 use App\Http\Requests\TicketTeam\StoreRequest;
 use App\Http\Requests\TicketTeam\UpdateRequest;
-use App\Http\Resources\TicketTeamResource;
 use App\Models\TicketTeam;
 use App\Models\TicketTeamRole;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Spatie\LaravelData\DataCollection;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -15,8 +16,10 @@ class TicketTeamController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, TicketTeamData>|DataCollection<array-key, TicketTeamData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection|DataCollection
     {
         if (! request()->user()?->can('ticketTeam.read')) {
             abort(403);
@@ -30,13 +33,17 @@ class TicketTeamController extends Controller
             ])
             ->getOrPaginate();
 
-        return TicketTeamResource::collection($ticketTeams);
+        if (request()->has('full')) {
+            return TicketTeamData::collect($ticketTeams, DataCollection::class)->wrap('data');
+        }
+
+        return TicketTeamData::collect($ticketTeams, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): TicketTeamResource
+    public function store(StoreRequest $request): TicketTeamData
     {
         $data = $request->validated();
         $team = TicketTeam::create($data);
@@ -52,13 +59,13 @@ class TicketTeamController extends Controller
             TicketTeamRole::insert($tickeTeamRoles->toArray());
         }
 
-        return new TicketTeamResource($team);
+        return TicketTeamData::from($team)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, TicketTeam $team): TicketTeamResource
+    public function update(UpdateRequest $request, TicketTeam $team): TicketTeamData
     {
         $data = $request->validated();
         $team->update($data);
@@ -75,7 +82,7 @@ class TicketTeamController extends Controller
             TicketTeamRole::insert($tickeTeamRoles->toArray());
         }
 
-        return new TicketTeamResource($team);
+        return TicketTeamData::from($team)->wrap('data');
     }
 
     /**

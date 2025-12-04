@@ -55,7 +55,7 @@ class ApplicationSubmission extends Model
     /** @use HasFactory<\Database\Factories\ApplicationSubmissionFactory> */
     use HasFactory;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     protected $casts = [
         'state' => ApplicationSubmissionState::class,

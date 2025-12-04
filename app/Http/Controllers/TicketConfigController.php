@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\TicketConfigData;
 use App\Enums\DiscordButton;
 use App\Http\Requests\TicketConfig\SetupRequest;
 use App\Http\Requests\TicketConfig\StoreRequest;
-use App\Http\Resources\TicketConfigResource;
 use App\Models\TicketButton;
 use App\Models\TicketConfig;
 use App\Models\TicketPanel;
@@ -22,7 +22,7 @@ class TicketConfigController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): TicketConfigResource
+    public function index(): TicketConfigData
     {
         if (! request()->user()?->can('ticketConfig.read')) {
             abort(403);
@@ -34,13 +34,13 @@ class TicketConfigController extends Controller
             $guild_id = request()->input('filter[guild_id]', $guild_id);
         }
 
-        return new TicketConfigResource(TicketConfig::where('guild_id', $guild_id)->first());
+        return TicketConfigData::from(TicketConfig::where('guild_id', $guild_id)->first())->wrap('data');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): TicketConfigResource
+    public function store(StoreRequest $request): TicketConfigData
     {
         TicketConfig::upsert([
             [
@@ -49,7 +49,7 @@ class TicketConfigController extends Controller
             ],
         ], uniqueBy: ['guild_id'], update: ['category_id', 'transcript_channel_id']);
 
-        return new TicketConfigResource(TicketConfig::where('guild_id', config('services.discord.server_id'))->first());
+        return TicketConfigData::from(TicketConfig::where('guild_id', config('services.discord.server_id'))->first())->wrap('data');
     }
 
     public function setup(SetupRequest $request): true

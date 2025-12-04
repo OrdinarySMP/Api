@@ -2,6 +2,8 @@
 
 namespace App\Repositories;
 
+use App\Data\Discord\MemberData;
+use App\Data\Discord\UserData;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -99,10 +101,7 @@ class DiscordRepository
         return collect($currentUser);
     }
 
-    /**
-     * @return array<mixed>
-     */
-    public function getUserById(string $userId): array
+    public function getUserById(string $userId): ?UserData
     {
         /**
          * @var array<mixed>
@@ -112,14 +111,20 @@ class DiscordRepository
 
             return $response->json();
         });
+        try {
+            $userData = UserData::from($user);
+        } catch (\Exception $e) {
+            Log::error('Could not parse user into UserData:', [
+                'error' => $e,
+                'user' => $user,
+            ]);
+            $userData = null;
+        }
 
-        return $user;
+        return $userData;
     }
 
-    /**
-     * @return array<mixed>
-     */
-    public function getGuildMemberById(string $userId): array
+    public function getGuildMemberById(string $userId): ?MemberData
     {
         $guildId = config('services.discord.server_id');
         /**
@@ -131,12 +136,17 @@ class DiscordRepository
             return $response->json();
         });
 
-        if (! $member || ! array_key_exists('user', $member)) {
-            Log::error("Could not find member for user id: {$userId}.", $member);
-            throw new \Error("Could not find member for user id: {$userId}.");
+        try {
+            $memberData = MemberData::from($member);
+        } catch (\Exception $e) {
+            Log::error('Could not parse member into MemberData:', [
+                'error' => $e,
+                'member' => $member,
+            ]);
+            $memberData = null;
         }
 
-        return $member;
+        return $memberData;
     }
 
     public function addRoleToMember(string $roleId, string $userId, ?string $reason = null): bool

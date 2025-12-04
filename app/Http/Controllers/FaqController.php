@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\FaqData;
 use App\Http\Requests\Faq\StoreRequest;
 use App\Http\Requests\Faq\UpdateRequest;
-use App\Http\Resources\FaqResource;
 use App\Models\Faq;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -14,8 +14,10 @@ class FaqController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, FaqData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         if (! request()->user()?->can('faq.read')) {
             abort(403);
@@ -27,25 +29,25 @@ class FaqController extends Controller
             ])
             ->getOrPaginate();
 
-        return FaqResource::collection($faqs);
+        return FaqData::collect($faqs, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): FaqResource
+    public function store(StoreRequest $request): FaqData
     {
-        return new FaqResource(Faq::create($request->validated()));
+        return FaqData::from(Faq::create($request->validated()))->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, Faq $faq): FaqResource
+    public function update(UpdateRequest $request, Faq $faq): FaqData
     {
         $faq->update($request->validated());
 
-        return new FaqResource($faq);
+        return FaqData::from($faq)->wrap('data');
     }
 
     /**

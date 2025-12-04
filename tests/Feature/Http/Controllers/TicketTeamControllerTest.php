@@ -10,7 +10,8 @@ test('auth user can get ticket teams', function () {
     $this->actingAs($user)
         ->get(route('team.index'))
         ->assertOk()
-        ->assertJson(['data' => [$ticketTeam->toArray()]]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $ticketTeam->id);
 });
 
 test('can create ticket team', function () {

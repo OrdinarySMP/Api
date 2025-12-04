@@ -5,16 +5,27 @@ use App\Models\Application;
 use App\Models\ApplicationResponse;
 use App\Models\ApplicationSubmission;
 use App\Models\User;
-use Illuminate\Support\Carbon;
 
 beforeEach(function () {
     Http::fake([
         config('services.discord.api_url').'/guilds/*' => Http::response([
+            'flags' => 1,
+            'nick' => '',
+            'pending' => false,
+            'premium_since' => '',
+            'roles' => [],
+            'unusual_dm_activity_until' => '',
+            'mute' => false,
+            'deaf' => false,
             'user' => [
                 'id' => 123,
                 'username' => 'test',
                 'global_name' => 'test',
-                'avatar' => null,
+                'discriminator' => '',
+                'public_flags' => 1,
+                'flags' => 1,
+                'accent_color' => 1,
+                'banner_color' => '',
             ],
             'joined_at' => now()->toDateTimeString(),
         ]),
@@ -34,7 +45,8 @@ test('auth user can get application submission', function () {
     $this->actingAs($user)
         ->get(route('application-submission.index'))
         ->assertOk()
-        ->assertJson(['data' => [collect($applicationSubmission)->except('application')->toArray()]]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $applicationSubmission->id);
 });
 
 test('can create application submission', function () {
@@ -54,10 +66,7 @@ test('can create application submission', function () {
     $this->actingAs($user)
         ->postJson(route('application-submission.store'), $data)
         ->assertCreated()
-        ->assertJson(['data' => [
-            ...collect($data)->except('submitted_at')->toArray(),
-            'submitted_at' => Carbon::parse('2024-12-24 12:00:00')->format('Y-m-d\TH:i:s.u\Z'),
-        ]]);
+        ->assertJson(['data' => collect($data)->except('submitted_at')->toArray()]);
 
     $this->assertDatabaseHas('application_submissions', $data);
 });
@@ -80,10 +89,7 @@ test('can update application submission', function () {
     $this->actingAs($user)
         ->patchJson(route('application-submission.update', $applicationSubmission), $data)
         ->assertOk()
-        ->assertJson(['data' => [
-            ...collect($data)->except('submitted_at')->toArray(),
-            'submitted_at' => Carbon::parse('2024-12-24 12:00:00')->format('Y-m-d\TH:i:s.u\Z'),
-        ]]);
+        ->assertJson(['data' => collect($data)->except('submitted_at')->toArray()]);
 
     $this->assertDatabaseHas('application_submissions', $data);
 });

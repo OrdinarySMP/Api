@@ -72,3 +72,4 @@ jobs:
           DB_DATABASE: api
           DB_USERNAME: api
           DB_PASSWORD: api
+

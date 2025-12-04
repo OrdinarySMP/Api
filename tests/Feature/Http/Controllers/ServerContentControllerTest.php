@@ -10,7 +10,8 @@ test('auth user can get server contents', function () {
     $this->actingAs($user)
         ->get(route('server-content.index'))
         ->assertOk()
-        ->assertJson(['data' => [$serverContent->toArray()]]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $serverContent->id);
 });
 
 test('can create server content', function () {

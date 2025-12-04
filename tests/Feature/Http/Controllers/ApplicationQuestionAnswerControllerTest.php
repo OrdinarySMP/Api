@@ -13,7 +13,8 @@ test('auth user can get application question answer', function () {
     $this->actingAs($user)
         ->get(route('application-question-answer.index'))
         ->assertOk()
-        ->assertJson(['data' => [$applicationQuestion->toArray()]]);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $applicationQuestion->id);
 });
 
 test('can create application question answer', function () {

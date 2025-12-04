@@ -46,7 +46,7 @@ class ServerContent extends Model
     /** @use HasFactory<\Database\Factories\ServerContentFactory> */
     use HasFactory;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     protected $casts = [
         'is_recommended' => 'boolean',

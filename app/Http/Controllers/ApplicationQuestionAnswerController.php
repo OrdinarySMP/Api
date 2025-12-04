@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\ApplicationQuestionAnswerData;
 use App\Enums\ApplicationSubmissionState;
 use App\Http\Requests\ApplicationQuestionAnswer\StoreRequest;
 use App\Http\Requests\ApplicationQuestionAnswer\UpdateRequest;
-use App\Http\Resources\ApplicationQuestionAnswerResource;
 use App\Models\ApplicationQuestionAnswer;
 use App\Models\ApplicationSubmission;
 use App\Repositories\ApplicationActivityRepository;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -17,8 +17,10 @@ class ApplicationQuestionAnswerController extends Controller
 {
     /**
      * Display a listing of the resource.
+     *
+     * @return PaginatedDataCollection<array-key, ApplicationQuestionAnswerData>
      */
-    public function index(): AnonymousResourceCollection
+    public function index(): PaginatedDataCollection
     {
         if (! request()->user()?->can('applicationQuestionAnswer.read')) {
             abort(403);
@@ -30,13 +32,13 @@ class ApplicationQuestionAnswerController extends Controller
             ])
             ->getOrPaginate();
 
-        return ApplicationQuestionAnswerResource::collection($applicationQuestionAnswer);
+        return ApplicationQuestionAnswerData::collect($applicationQuestionAnswer, PaginatedDataCollection::class);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): ApplicationQuestionAnswerResource
+    public function store(StoreRequest $request): ApplicationQuestionAnswerData
     {
         $data = $request->validated();
 
@@ -50,17 +52,17 @@ class ApplicationQuestionAnswerController extends Controller
         $applicationQuestionAnswer = ApplicationQuestionAnswer::create($data);
         (new ApplicationActivityRepository)->questionAnswerCreated($applicationQuestionAnswer);
 
-        return new ApplicationQuestionAnswerResource($applicationQuestionAnswer);
+        return ApplicationQuestionAnswerData::from($applicationQuestionAnswer)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, ApplicationQuestionAnswer $applicationQuestionAnswer): ApplicationQuestionAnswerResource
+    public function update(UpdateRequest $request, ApplicationQuestionAnswer $applicationQuestionAnswer): ApplicationQuestionAnswerData
     {
         $applicationQuestionAnswer->update($request->validated());
 
-        return new ApplicationQuestionAnswerResource($applicationQuestionAnswer->refresh());
+        return ApplicationQuestionAnswerData::from($applicationQuestionAnswer->refresh())->wrap('data');
     }
 
     /**

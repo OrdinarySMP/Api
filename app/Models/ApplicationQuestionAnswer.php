@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationQuestionAnswer whereUpdatedAt($value)
  *
  * @property-read \App\Models\ApplicationQuestion|null $applicationQuestion
+ * @property-read \App\Models\ApplicationSubmission|null $applicationSubmission
  *
  * @mixin \Eloquent
  */
@@ -36,7 +37,7 @@ class ApplicationQuestionAnswer extends Model
     /** @use HasFactory<\Database\Factories\ApplicationQuestionAnswerFactory> */
     use HasFactory;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     /**
      * @return BelongsTo<ApplicationQuestion, $this>

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ApplicationResponseType;
 use App\Enums\ApplicationRoleType;
+use App\Enums\DiscordButton;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -71,7 +72,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $embed_description
  * @property string|null $embed_color
  * @property string|null $embed_button_text
- * @property int|null $embed_button_color
+ * @property DiscordButton|null $embed_button_color
  * @property string|null $activity_channel
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $requiredRoles
  * @property-read int|null $required_roles_count
@@ -96,10 +97,11 @@ class Application extends Model
     /** @use HasFactory<\Database\Factories\ApplicationFactory> */
     use HasFactory, SoftDeletes;
 
-    protected $guarded = ['id', 'created_at', 'udpated_at'];
+    protected $guarded = ['id', 'created_at', 'updated_at'];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'embed_button_color' => DiscordButton::class,
     ];
 
     /**
