@@ -13,6 +13,9 @@ use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 
+/**
+ * @property int<0, max>|null $application_response_id
+ */
 class CreateApplicationSubmissionRequest extends Data
 {
     public function __construct(

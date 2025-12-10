@@ -6,13 +6,13 @@ use App\Models\User;
 use Illuminate\Container\Attributes\CurrentUser;
 use Spatie\LaravelData\Data;
 
-class ResendServerContentMessageRequest extends Data
+class ReadServerContentMessageRequest extends Data
 {
     public function __construct() {}
 
     public static function authorize(
         #[CurrentUser] User $user,
     ): bool {
-        return $user->can('serverContentMessage.delete');
+        return $user->can('serverContentMessage.read');
     }
 }

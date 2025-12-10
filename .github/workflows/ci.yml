@@ -45,6 +45,11 @@ jobs:
         ports:
         - 3306:3306
     steps:
+      - name: Setup PHP with Xdebug
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: xdebug
       - name: Check out Git repository
         uses: actions/checkout@v4
       - name: Validate composer.json and composer.lock
@@ -55,11 +60,6 @@ jobs:
         run: ./vendor/bin/pint --test
       - name: Run phpstan
         run: ./vendor/bin/phpstan analyse --memory-limit 2G
-      - name: Setup PHP with Xdebug
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-          coverage: xdebug
       - name: Run tests
         run: |
           echo "APP_KEY=" > .env

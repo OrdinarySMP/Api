@@ -22,6 +22,6 @@ class UpdateApplicationQuestionRequest extends Data
     public static function authorize(
         #[CurrentUser] User $user,
     ): bool {
-        return $user->can('applicationQuestion.udpate');
+        return $user->can('applicationQuestion.update');
     }
 }
