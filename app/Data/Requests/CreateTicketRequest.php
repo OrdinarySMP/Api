@@ -21,6 +21,6 @@ class CreateTicketRequest extends Data
     public static function authorize(
         #[CurrentUser] User $user,
     ): bool {
-        return $user->hasRole('Bot');
+        return $user->can('ticket.create');
     }
 }

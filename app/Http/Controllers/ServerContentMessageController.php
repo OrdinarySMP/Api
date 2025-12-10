@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\Requests\CreateServerContentMessageRequest;
+use App\Data\Requests\ResendServerContentMessageRequest;
 use App\Data\ServerContentMessageData;
-use App\Http\Requests\ServerContentMessage\CreateRequest;
 use App\Models\ServerContentMessage;
 
 class ServerContentMessageController extends Controller
 {
-    public function index(): ?ServerContentMessageData
+    public function index(ResendServerContentMessageRequest $request): ?ServerContentMessageData
     {
         if (! request()->user()?->can('serverContentMessage.read')) {
             abort(403);
@@ -19,11 +20,13 @@ class ServerContentMessageController extends Controller
         return $messages ? ServerContentMessageData::from($messages) : null;
     }
 
-    public function store(CreateRequest $request): ServerContentMessageData
+    public function store(CreateServerContentMessageRequest $request): ServerContentMessageData
     {
         ServerContentMessage::upsert([
             [
-                ...$request->validated(),
+                'heading' => $request->heading,
+                'not_recommended' => $request->not_recommended,
+                'recommended' => $request->recommended,
                 'server_id' => config('services.discord.server_id'),
             ],
         ], uniqueBy: ['server_id'], update: ['heading', 'not_recommended', 'recommended']);

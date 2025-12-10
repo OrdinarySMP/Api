@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Data\ReactionRoleData;
-use App\Http\Requests\ReactionRole\StoreRequest;
-use App\Http\Requests\ReactionRole\UpdateRequest;
+use App\Data\Requests\CreateReactionRoleRequest;
+use App\Data\Requests\DeleteReactionRoleRequest;
+use App\Data\Requests\ReadReactionRoleRequest;
+use App\Data\Requests\UpdateReactionRoleRequest;
 use App\Models\ReactionRole;
 use App\Rules\DiscordMessageRule;
 use Illuminate\Support\Facades\Http;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -19,7 +22,7 @@ class ReactionRoleController extends Controller
      *
      * @return PaginatedDataCollection<array-key, ReactionRoleData>
      */
-    public function index(): PaginatedDataCollection
+    public function index(ReadReactionRoleRequest $request): PaginatedDataCollection
     {
         if (! request()->user()?->can('reactionRole.read')) {
             abort(403);
@@ -39,13 +42,13 @@ class ReactionRoleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): ReactionRoleData
+    public function store(CreateReactionRoleRequest $request): ReactionRoleData
     {
-        [, $channelId, $messageId] = DiscordMessageRule::splitMessageLink($request->validated('message_link'));
+        [, $channelId, $messageId] = DiscordMessageRule::splitMessageLink($request->message_link);
         /**
          * @var string
          */
-        $urlEmoji = str_replace('<', '', $request->validated('emoji'));
+        $urlEmoji = str_replace('<', '', $request->emoji);
         $urlEmoji = str_replace('>', '', $urlEmoji);
         $urlEmoji = urlencode($urlEmoji);
         $response = Http::discordBot()->put('/channels/'.$channelId.'/messages/'.$messageId.'/reactions/'.$urlEmoji.'/@me');
@@ -57,36 +60,48 @@ class ReactionRoleController extends Controller
             ], 400);
         }
 
-        return ReactionRoleData::from(ReactionRole::create([
-            ...$request->validated(),
-            'message_id' => $messageId,
-            'channel_id' => $channelId,
-        ]))->wrap('data');
+        $reactionRole = new ReactionRole;
+        $reactionRole->emoji = $request->emoji;
+        $reactionRole->role_id = $request->role_id;
+        $reactionRole->message_id = $messageId;
+        $reactionRole->channel_id = $channelId;
+        $reactionRole->save();
+
+        return ReactionRoleData::from($reactionRole)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, ReactionRole $reactionRole): ReactionRoleData
+    public function update(UpdateReactionRoleRequest $request, ReactionRole $reactionRole): ReactionRoleData
     {
-        [, $channelId, $messageId] = DiscordMessageRule::splitMessageLink($request->validated('message_link'));
-        $reactionRole->update([
-            ...$request->validated(),
-            'message_id' => $messageId,
-            'channel_id' => $channelId,
-        ]);
 
-        return ReactionRoleData::from($reactionRole->refresh())->wrap('data');
+        if (! $request->message_link instanceof Optional) {
+            [, $channelId, $messageId] = DiscordMessageRule::splitMessageLink($request->message_link);
+            $reactionRole->message_id = $messageId;
+            $reactionRole->channel_id = $channelId;
+        }
+
+        if (! $request->emoji instanceof Optional) {
+            $reactionRole->emoji = $request->emoji;
+        }
+
+        if (! $request->role_id instanceof Optional) {
+            $reactionRole->role_id = $request->role_id;
+        }
+
+        if ($reactionRole->isDirty()) {
+            $reactionRole->save();
+        }
+
+        return ReactionRoleData::from($reactionRole)->wrap('data');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ReactionRole $reactionRole): bool
+    public function destroy(DeleteReactionRoleRequest $request, ReactionRole $reactionRole): bool
     {
-        if (! request()->user()?->can('reactionRole.delete')) {
-            abort(403);
-        }
         $urlEmoji = str_replace('<', '', $reactionRole->emoji);
         $urlEmoji = str_replace('>', '', $urlEmoji);
         $urlEmoji = urlencode($urlEmoji);

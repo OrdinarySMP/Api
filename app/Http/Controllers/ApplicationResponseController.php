@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Data\ApplicationResponseData;
-use App\Http\Requests\ApplicationResponse\StoreRequest;
-use App\Http\Requests\ApplicationResponse\UpdateRequest;
+use App\Data\Requests\CreateApplicationResponseRequest;
+use App\Data\Requests\DeleteApplicationResponseRequest;
+use App\Data\Requests\ReadApplicationResponseRequest;
+use App\Data\Requests\UpdateApplicationResponseRequest;
 use App\Models\ApplicationResponse;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -17,11 +20,8 @@ class ApplicationResponseController extends Controller
      *
      * @return PaginatedDataCollection<array-key, ApplicationResponseData>
      */
-    public function index(): PaginatedDataCollection
+    public function index(ReadApplicationResponseRequest $request): PaginatedDataCollection
     {
-        if (! request()->user()?->can('applicationResponse.read')) {
-            abort(403);
-        }
         $applicationResponse = QueryBuilder::for(ApplicationResponse::class)
             ->allowedFilters([
                 AllowedFilter::exact('id'),
@@ -35,17 +35,42 @@ class ApplicationResponseController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): ApplicationResponseData
+    public function store(CreateApplicationResponseRequest $request): ApplicationResponseData
     {
-        return ApplicationResponseData::from(ApplicationResponse::create($request->validated()))->wrap('data');
+        $applicationResponse = new ApplicationResponse;
+        $applicationResponse->type = $request->type;
+        $applicationResponse->name = $request->name;
+        $applicationResponse->response = $request->response;
+        $applicationResponse->application_id = $request->application_id;
+        $applicationResponse->save();
+
+        return ApplicationResponseData::from($applicationResponse)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, ApplicationResponse $applicationResponse): ApplicationResponseData
+    public function update(UpdateApplicationResponseRequest $request, ApplicationResponse $applicationResponse): ApplicationResponseData
     {
-        $applicationResponse->update($request->validated());
+        if (! $request->type instanceof Optional) {
+            $applicationResponse->type = $request->type;
+        }
+
+        if (! $request->name instanceof Optional) {
+            $applicationResponse->name = $request->name;
+        }
+
+        if (! $request->response instanceof Optional) {
+            $applicationResponse->response = $request->response;
+        }
+
+        if (! $request->application_id instanceof Optional) {
+            $applicationResponse->application_id = $request->application_id;
+        }
+
+        if ($applicationResponse->isDirty()) {
+            $applicationResponse->save();
+        }
 
         return ApplicationResponseData::from($applicationResponse->refresh())->wrap('data');
     }
@@ -53,12 +78,8 @@ class ApplicationResponseController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ApplicationResponse $applicationResponse): bool
+    public function destroy(DeleteApplicationResponseRequest $request, ApplicationResponse $applicationResponse): bool
     {
-        if (! request()->user()?->can('applicationResponse.delete')) {
-            abort(403);
-        }
-
         return $applicationResponse->delete() ?? false;
     }
 }

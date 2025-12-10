@@ -21,8 +21,8 @@ test('auth user can get tickets', function () {
         ->assertJson(['data' => [['id' => $ticket->id]]]);
 });
 
-test('none bot user can not create tickets', function () {
-    $user = User::factory()->owner()->create();
+test('none super user can not create tickets', function () {
+    $user = User::factory()->create();
     $button = TicketButton::factory()->create();
     $data = [
         'ticket_button_id' => $button->id,
