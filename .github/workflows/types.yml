@@ -2,11 +2,8 @@ name: Types
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    tags:
+    - '*'
 
 jobs:
   publish-types:
@@ -40,7 +37,7 @@ jobs:
       - name: Set package version from release tag
         working-directory: resources/types
         run: |
-          TAG="0.0.0"
+          TAG="${{ github.event.release.tag_name }}"
           jq --arg tag "$TAG" '.version = $tag' package.json > package.tmp.json
           mv package.tmp.json package.json
 
