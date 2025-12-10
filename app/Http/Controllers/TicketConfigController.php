@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\Requests\ReadTicketConfigRequest;
+use App\Data\Requests\SetupTicketConfigRequest;
+use App\Data\Requests\UpdateTicketConfigRequest;
 use App\Data\TicketConfigData;
 use App\Enums\DiscordButton;
-use App\Http\Requests\TicketConfig\SetupRequest;
-use App\Http\Requests\TicketConfig\StoreRequest;
 use App\Models\TicketButton;
 use App\Models\TicketConfig;
 use App\Models\TicketPanel;
@@ -22,15 +23,11 @@ class TicketConfigController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): TicketConfigData
+    public function index(ReadTicketConfigRequest $request): TicketConfigData
     {
-        if (! request()->user()?->can('ticketConfig.read')) {
-            abort(403);
-        }
-
         $guild_id = config('services.discord.server_id');
 
-        if (request()->user()->hasRole('Bot')) {
+        if (request()->user()?->hasRole('Bot')) {
             $guild_id = request()->input('filter[guild_id]', $guild_id);
         }
 
@@ -40,11 +37,12 @@ class TicketConfigController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): TicketConfigData
+    public function store(UpdateTicketConfigRequest $request): TicketConfigData
     {
         TicketConfig::upsert([
             [
-                ...$request->validated(),
+                'category_id' => $request->category_id,
+                'transcript_channel_id' => $request->transcript_channel_id,
                 'guild_id' => config('services.discord.server_id'),
             ],
         ], uniqueBy: ['guild_id'], update: ['category_id', 'transcript_channel_id']);
@@ -52,15 +50,15 @@ class TicketConfigController extends Controller
         return TicketConfigData::from(TicketConfig::where('guild_id', config('services.discord.server_id'))->first())->wrap('data');
     }
 
-    public function setup(SetupRequest $request): true
+    public function setup(SetupTicketConfigRequest $request): true
     {
-        if (! request()->user()?->hasRole('Bot')) {
-            abort(403);
-        }
-
         DB::beginTransaction();
         try {
-            $ticketConfig = TicketConfig::create($request->validated());
+            $ticketConfig = new TicketConfig;
+            $ticketConfig->category_id = $request->category_id;
+            $ticketConfig->transcript_channel_id = $request->transcript_channel_id;
+            $ticketConfig->guild_id = $request->guild_id;
+            $ticketConfig->save();
 
             $ticketTeam = TicketTeam::create(['name' => 'default']);
 
@@ -68,7 +66,7 @@ class TicketConfigController extends Controller
                 'title' => 'Click to open a ticket',
                 'message' => 'Click on the button corresponding to the type of ticket you wish to open',
                 'embed_color' => '#22e629',
-                'channel_id' => $request->validated('create_channel_id'),
+                'channel_id' => $request->create_channel_id,
             ]);
 
             $ticketButton = TicketButton::create([

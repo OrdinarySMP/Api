@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\Requests\InvokeBotTokenRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
 class BotTokenController extends Controller
 {
-    public function __invoke(): JsonResponse
+    public function __invoke(InvokeBotTokenRequest $request): JsonResponse
     {
-        if (! request()->user()?->hasRole('Owner')) {
-            abort(403);
-        }
         $user = User::firstOrCreate([
             'name' => 'Discord Bot',
             'nickname' => 'Discord Bot',

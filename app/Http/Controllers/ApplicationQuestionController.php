@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Data\ApplicationQuestionData;
-use App\Http\Requests\ApplicationQuestion\StoreRequest;
-use App\Http\Requests\ApplicationQuestion\UpdateRequest;
+use App\Data\Requests\CreateApplicationQuestionRequest;
+use App\Data\Requests\DeleteApplicationQuestionRequest;
+use App\Data\Requests\ReadApplicationQuestionRequest;
+use App\Data\Requests\UpdateApplicationQuestionRequest;
 use App\Models\ApplicationQuestion;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -17,11 +20,8 @@ class ApplicationQuestionController extends Controller
      *
      * @return PaginatedDataCollection<array-key, ApplicationQuestionData>
      */
-    public function index(): PaginatedDataCollection
+    public function index(ReadApplicationQuestionRequest $request): PaginatedDataCollection
     {
-        if (! request()->user()?->can('applicationQuestion.read')) {
-            abort(403);
-        }
         $applicationQuestion = QueryBuilder::for(ApplicationQuestion::class)
             ->defaultSort('order')
             ->allowedSorts('order')
@@ -38,25 +38,50 @@ class ApplicationQuestionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): ApplicationQuestionData
+    public function store(CreateApplicationQuestionRequest $request): ApplicationQuestionData
     {
-        return ApplicationQuestionData::from(ApplicationQuestion::create($request->validated()))->wrap('data');
+        $applicationQuestion = new ApplicationQuestion;
+        $applicationQuestion->question = $request->question;
+        $applicationQuestion->order = $request->order;
+        $applicationQuestion->is_active = $request->is_active;
+        $applicationQuestion->application_id = $request->application_id;
+        $applicationQuestion->save();
+
+        return ApplicationQuestionData::from($applicationQuestion)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, ApplicationQuestion $applicationQuestion): ApplicationQuestionData
+    public function update(UpdateApplicationQuestionRequest $request, ApplicationQuestion $applicationQuestion): ApplicationQuestionData
     {
-        $applicationQuestion->update($request->validated());
+        if (! $request->question instanceof Optional) {
+            $applicationQuestion->question = $request->question;
+        }
 
-        return ApplicationQuestionData::from($applicationQuestion->refresh())->wrap('data');
+        if (! $request->order instanceof Optional) {
+            $applicationQuestion->order = $request->order;
+        }
+
+        if (! $request->is_active instanceof Optional) {
+            $applicationQuestion->is_active = $request->is_active;
+        }
+
+        if (! $request->application_id instanceof Optional) {
+            $applicationQuestion->application_id = $request->application_id;
+        }
+
+        if ($applicationQuestion->isDirty()) {
+            $applicationQuestion->save();
+        }
+
+        return ApplicationQuestionData::from($applicationQuestion)->wrap('data');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ApplicationQuestion $applicationQuestion): bool
+    public function destroy(DeleteApplicationQuestionRequest $request, ApplicationQuestion $applicationQuestion): bool
     {
         if (! request()->user()?->can('applicationQuestion.delete')) {
             abort(403);

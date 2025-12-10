@@ -2,27 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\Permission\CreateRequest;
+use App\Data\Requests\CreatePermissionRequest;
+use App\Data\Requests\ReadPermissionRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Role;
 
 class PermissionController extends Controller
 {
-    public function template(): JsonResponse
+    public function template(ReadPermissionRequest $request): JsonResponse
     {
         if (! request()->user()?->hasRole('Owner')) {
             abort(403);
         }
 
         $permissions = [];
-        foreach (CreateRequest::$models as $model) {
+        foreach (CreatePermissionRequest::$models as $model) {
             $permissions[$model] = [];
-            foreach (CreateRequest::$operations as $operation) {
+            foreach (CreatePermissionRequest::$operations as $operation) {
                 $permissions[$model][] = $operation;
             }
         }
 
-        foreach (CreateRequest::$specialPermissions as $key => $specialPermission) {
+        foreach (CreatePermissionRequest::$specialPermissions as $key => $specialPermission) {
             $permissions[$key] = [
                 ...$permissions[$key] ?? [],
                 ...$specialPermission,
@@ -32,7 +34,7 @@ class PermissionController extends Controller
         return response()->json($permissions);
     }
 
-    public function index(): JsonResponse
+    public function index(ReadPermissionRequest $request): JsonResponse
     {
         if (! request()->user()?->hasRole('Owner')) {
             abort(403);
@@ -48,25 +50,33 @@ class PermissionController extends Controller
         return response()->json($roles);
     }
 
-    public function store(CreateRequest $request): JsonResponse
+    public function store(CreatePermissionRequest $request): JsonResponse
     {
-        $validatedRoles = collect($request->validated());
+        /**
+         * @var Collection<int, array{role: string, permissions: array<string, array<string,bool>>}>
+         */
+        $validatedRoles = collect($request->permissions);
         $roles = $validatedRoles->pluck('role')
             ->push('Owner', 'Bot');
         Role::whereNotIn('name', $roles)->delete();
 
+        /**
+         * @param  array{role: string, permissions: array<string, array<string,bool>>}  $validatedRole
+         */
         $validatedRoles->each(function ($validatedRole) {
             $role = Role::firstOrCreate(['guard_name' => 'web', 'name' => $validatedRole['role']]);
 
             /**
-             * @var array<array<bool>> $permissions
+             * @var array<string, array<string,bool>> $permissions
              */
-            $permissions = $validatedRole['permissions'];
+            $permissions = (array) $validatedRole['permissions'];
             $mappedPermissions = collect($permissions)
                 /**
-                 * @var array<bool> $permissions
+                 * @param  array<string,bool>  $flags
+                 * @param  string  $model
+                 * @return array<int,string>
                  */
-                ->flatMap(fn (array $permissions, string $model) => collect($permissions)
+                ->flatMap(fn (array $flags, string $model) => collect($flags)
                     ->filter(fn ($value) => $value === true)
                     ->keys()
                     ->map(fn ($operation) => "$model.$operation"))

@@ -2,7 +2,7 @@
 
 use App\Models\User;
 
-test('auth user can get faqs', function () {
+test('auth user can get bot token', function () {
     $user = User::factory()->owner()->create();
 
     $this->assertDatabaseMissing('users', ['name' => 'Discord Bot']);
@@ -26,4 +26,16 @@ test('auth user can get faqs', function () {
             'token',
         ]);
     $this->assertEquals(1, $botUser->tokens()->count());
+});
+
+test('none owner user can not get bot token', function () {
+    $user = User::factory()->create();
+
+    $this->assertDatabaseMissing('users', ['name' => 'Discord Bot']);
+
+    $this->actingAs($user)
+        ->get(route('bot.token'))
+        ->assertForbidden();
+
+    $this->assertDatabaseMissing('users', ['name' => 'Discord Bot']);
 });

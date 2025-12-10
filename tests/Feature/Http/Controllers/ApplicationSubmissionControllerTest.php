@@ -32,8 +32,8 @@ beforeEach(function () {
     ]);
     Http::fake([
         config('services.discord.api_url').'/channels/*' => Http::response([
-            'id' => 123,
-            'channel_id' => 123,
+            'id' => '123',
+            'channel_id' => '123',
         ]),
     ]);
 });

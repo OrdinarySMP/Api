@@ -2,15 +2,27 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\LoginRequest;
+use App\Data\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
+use Spatie\LaravelData\Optional;
 
 class AuthController extends Controller
 {
     public function login(LoginRequest $request): JsonResponse
     {
-        $request->authenticate();
+        $remember = ! $request->remember instanceof Optional ? $request->remember : false;
+        if (! Auth::attempt([
+            'name' => $request->name,
+            'password' => $request->password,
+        ], $remember)
+        ) {
+
+            throw ValidationException::withMessages([
+                'name' => trans('auth.failed'),
+            ]);
+        }
 
         session()->regenerate();
 

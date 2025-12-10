@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Data\FaqData;
-use App\Http\Requests\Faq\StoreRequest;
-use App\Http\Requests\Faq\UpdateRequest;
+use App\Data\Requests\CreateFaqRequest;
+use App\Data\Requests\DeleteFaqRequest;
+use App\Data\Requests\ReadFaqRequest;
+use App\Data\Requests\UpdateFaqRequest;
 use App\Models\Faq;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -17,11 +20,8 @@ class FaqController extends Controller
      *
      * @return PaginatedDataCollection<array-key, FaqData>
      */
-    public function index(): PaginatedDataCollection
+    public function index(ReadFaqRequest $request): PaginatedDataCollection
     {
-        if (! request()->user()?->can('faq.read')) {
-            abort(403);
-        }
         $faqs = QueryBuilder::for(Faq::class)
             ->allowedFilters([
                 'question',
@@ -35,17 +35,32 @@ class FaqController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): FaqData
+    public function store(CreateFaqRequest $request): FaqData
     {
-        return FaqData::from(Faq::create($request->validated()))->wrap('data');
+        $faq = new Faq;
+        $faq->question = $request->question;
+        $faq->answer = $request->answer;
+        $faq->save();
+
+        return FaqData::from($faq)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, Faq $faq): FaqData
+    public function update(UpdateFaqRequest $request, Faq $faq): FaqData
     {
-        $faq->update($request->validated());
+        if (! $request->question instanceof Optional) {
+            $faq->question = $request->question;
+        }
+
+        if (! $request->answer instanceof Optional) {
+            $faq->answer = $request->answer;
+        }
+
+        if ($faq->isDirty()) {
+            $faq->save();
+        }
 
         return FaqData::from($faq)->wrap('data');
     }
@@ -53,12 +68,8 @@ class FaqController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Faq $faq): bool
+    public function destroy(DeleteFaqRequest $request, Faq $faq): bool
     {
-        if (! request()->user()?->can('faq.delete')) {
-            abort(403);
-        }
-
         return $faq->delete() ?? false;
     }
 }

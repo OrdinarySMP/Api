@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\Requests\CloseTicketRequest;
 use App\Data\Requests\CreateTicketRequest;
+use App\Data\Requests\ReadTicketRequest;
 use App\Data\TicketData;
 use App\Enums\TicketState;
-use App\Http\Requests\Ticket\CloseRequest;
 use App\Models\Ticket;
 use App\Models\TicketButton;
 use App\Repositories\TicketRepository;
@@ -25,11 +26,8 @@ class TicketController extends Controller
      *
      * @return PaginatedDataCollection<array-key, TicketData>
      */
-    public function index(): PaginatedDataCollection
+    public function index(ReadTicketRequest $request): PaginatedDataCollection
     {
-        if (! request()->user()?->can('ticket.read')) {
-            abort(403);
-        }
         $tickets = QueryBuilder::for(Ticket::class)
             ->allowedIncludes(['ticketButton.ticketTeam.ticketTeamRoles', 'ticketTranscripts'])
             ->allowedSorts('created_at')
@@ -59,12 +57,13 @@ class TicketController extends Controller
         return TicketData::from($ticket)->wrap('data');
     }
 
-    public function close(CloseRequest $request, Ticket $ticket): bool
+    public function close(CloseTicketRequest $request, Ticket $ticket): bool
     {
-        $ticket->update([
-            ...$request->validated(),
-            'state' => TicketState::Closed,
-        ]);
+        $ticket->closed_by_discord_user_id = $request->closed_by_discord_user_id;
+        $ticket->closed_reason = $request->closed_reason;
+        $ticket->state = TicketState::Closed;
+        $ticket->save();
+
         $response = Http::discordBot()->delete('/channels/'.$ticket->channel_id);
         $this->ticketRepository->sendTranscript($ticket);
 

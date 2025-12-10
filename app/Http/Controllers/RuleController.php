@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\Requests\CreateRuleRequest;
+use App\Data\Requests\DeleteRuleRequest;
+use App\Data\Requests\ReadRuleRequest;
+use App\Data\Requests\UpdateRuleRequest;
 use App\Data\RuleData;
-use App\Http\Requests\Rule\StoreRequest;
-use App\Http\Requests\Rule\UpdateRequest;
 use App\Models\Rule;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -17,11 +20,8 @@ class RuleController extends Controller
      *
      * @return PaginatedDataCollection<array-key, RuleData>
      */
-    public function index(): PaginatedDataCollection
+    public function index(ReadRuleRequest $request): PaginatedDataCollection
     {
-        if (! request()->user()?->can('rule.read')) {
-            abort(403);
-        }
         $rules = QueryBuilder::for(Rule::class)
             ->defaultSort('number')
             ->allowedSorts('number')
@@ -37,30 +37,46 @@ class RuleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): RuleData
+    public function store(CreateRuleRequest $request): RuleData
     {
-        return RuleData::from(Rule::create($request->validated()))->wrap('data');
+        $rule = new Rule;
+        $rule->number = $request->number;
+        $rule->name = $request->name;
+        $rule->rule = $request->rule;
+        $rule->save();
+
+        return RuleData::from($rule)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, Rule $rule): RuleData
+    public function update(UpdateRuleRequest $request, Rule $rule): RuleData
     {
-        $rule->update($request->validated());
+        if (! $request->number instanceof Optional) {
+            $rule->number = $request->number;
+        }
 
-        return RuleData::from($rule->refresh())->wrap('data');
+        if (! $request->name instanceof Optional) {
+            $rule->name = $request->name;
+        }
+
+        if (! $request->rule instanceof Optional) {
+            $rule->rule = $request->rule;
+        }
+
+        if ($rule->isDirty()) {
+            $rule->save();
+        }
+
+        return RuleData::from($rule)->wrap('data');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Rule $rule): bool
+    public function destroy(DeleteRuleRequest $request, Rule $rule): bool
     {
-        if (! request()->user()?->can('rule.delete')) {
-            abort(403);
-        }
-
         return $rule->delete() ?? false;
     }
 }

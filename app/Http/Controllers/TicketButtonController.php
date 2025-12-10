@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\Requests\CreateTicketButtonRequest;
+use App\Data\Requests\DeleteTicketButtonRequest;
+use App\Data\Requests\ReadTicketButtonRequest;
+use App\Data\Requests\UpdateTicketButtonRequest;
 use App\Data\TicketButtonData;
-use App\Http\Requests\TicketButton\StoreRequest;
-use App\Http\Requests\TicketButton\UpdateRequest;
 use App\Models\TicketButton;
-use App\Models\TicketButtonPingRole;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -18,11 +20,8 @@ class TicketButtonController extends Controller
      *
      * @return PaginatedDataCollection<array-key, TicketButtonData>
      */
-    public function index(): PaginatedDataCollection
+    public function index(ReadTicketButtonRequest $request): PaginatedDataCollection
     {
-        if (! request()->user()?->can('ticketButton.read')) {
-            abort(403);
-        }
         $ticketButtons = QueryBuilder::for(TicketButton::class)
             ->allowedIncludes(['ticketButtonPingRoles'])
             ->allowedFilters([
@@ -38,45 +37,78 @@ class TicketButtonController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): TicketButtonData
+    public function store(CreateTicketButtonRequest $request): TicketButtonData
     {
-        $data = $request->validated();
-        $button = TicketButton::create($data);
+        $ticketButton = new TicketButton;
+        $ticketButton->ticket_team_id = $request->ticket_team_id;
+        $ticketButton->ticket_panel_id = $request->ticket_panel_id;
+        $ticketButton->text = $request->text;
+        $ticketButton->color = $request->color;
+        $ticketButton->initial_message = $request->initial_message;
+        $ticketButton->emoji = $request->emoji;
+        $ticketButton->naming_scheme = $request->naming_scheme;
+        $ticketButton->disabled = $request->disabled;
+        $ticketButton->save();
 
-        if (array_key_exists('ticket_button_ping_role_ids', $data)) {
-            /**
-             * @var array<string>
-             */
-            $ticketButtonPingRoleIds = $data['ticket_button_ping_role_ids'];
-            $ticketButtonPingRoles = collect($ticketButtonPingRoleIds)->map(fn ($ticketButtonPingRoleId) => [
+        $ticketButtonPingRoles = collect($request->ticket_button_ping_role_ids)
+            ->map(fn ($ticketButtonPingRoleId) => [
                 'role_id' => $ticketButtonPingRoleId,
-                'ticket_button_id' => $button->id,
             ]);
-            TicketButtonPingRole::insert($ticketButtonPingRoles->toArray());
+        if ($ticketButtonPingRoles->isNotEmpty()) {
+            $ticketButton->ticketButtonPingRoles()->createMany($ticketButtonPingRoles);
         }
 
-        return TicketButtonData::from($button)->wrap('data');
+        return TicketButtonData::from($ticketButton)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, TicketButton $button): TicketButtonData
+    public function update(UpdateTicketButtonRequest $request, TicketButton $button): TicketButtonData
     {
-        $data = $request->validated();
-        $button->update($data);
+        if (! $request->ticket_team_id instanceof Optional) {
+            $button->ticket_team_id = $request->ticket_team_id;
+        }
 
-        if (array_key_exists('ticket_button_ping_role_ids', $data)) {
+        if (! $request->ticket_panel_id instanceof Optional) {
+            $button->ticket_panel_id = $request->ticket_panel_id;
+        }
+
+        if (! $request->text instanceof Optional) {
+            $button->text = $request->text;
+        }
+
+        if (! $request->color instanceof Optional) {
+            $button->color = $request->color;
+        }
+
+        if (! $request->initial_message instanceof Optional) {
+            $button->initial_message = $request->initial_message;
+        }
+
+        if (! $request->emoji instanceof Optional) {
+            $button->emoji = $request->emoji;
+        }
+
+        if (! $request->naming_scheme instanceof Optional) {
+            $button->naming_scheme = $request->naming_scheme;
+        }
+
+        if (! $request->disabled instanceof Optional) {
+            $button->disabled = $request->disabled;
+        }
+
+        if ($button->isDirty()) {
+            $button->save();
+        }
+
+        if (! $request->ticket_button_ping_role_ids instanceof Optional && $request->ticket_button_ping_role_ids !== null) {
             $button->ticketButtonPingRoles()->delete();
-            /**
-             * @var array<string>
-             */
-            $ticketButtonPingRoleIds = $data['ticket_button_ping_role_ids'];
-            $ticketButtonPingRoles = collect($ticketButtonPingRoleIds)->map(fn ($ticketButtonPingRoleId) => [
-                'role_id' => $ticketButtonPingRoleId,
-                'ticket_button_id' => $button->id,
-            ]);
-            TicketButtonPingRole::insert($ticketButtonPingRoles->toArray());
+            $ticketButtonPingRoles = collect($request->ticket_button_ping_role_ids)
+                ->map(fn ($ticketButtonPingRoleId) => [
+                    'role_id' => $ticketButtonPingRoleId,
+                ]);
+            $button->ticketButtonPingRoles()->createMany($ticketButtonPingRoles);
         }
 
         return TicketButtonData::from($button)->wrap('data');
@@ -85,12 +117,8 @@ class TicketButtonController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(TicketButton $button): bool
+    public function destroy(DeleteTicketButtonRequest $request, TicketButton $button): bool
     {
-        if (! request()->user()?->can('ticketButton.delete')) {
-            abort(403);
-        }
-
         return $button->delete() ?? false;
     }
 }

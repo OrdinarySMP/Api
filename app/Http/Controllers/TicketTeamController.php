@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Data\Requests\CreateTicketTeamRequest;
+use App\Data\Requests\DeleteTicketTeamRequest;
+use App\Data\Requests\ReadTicketTeamRequest;
+use App\Data\Requests\UpdateTicketTeamRequest;
 use App\Data\TicketTeamData;
-use App\Http\Requests\TicketTeam\StoreRequest;
-use App\Http\Requests\TicketTeam\UpdateRequest;
 use App\Models\TicketTeam;
-use App\Models\TicketTeamRole;
 use Spatie\LaravelData\DataCollection;
+use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -19,11 +21,8 @@ class TicketTeamController extends Controller
      *
      * @return PaginatedDataCollection<array-key, TicketTeamData>|DataCollection<array-key, TicketTeamData>
      */
-    public function index(): PaginatedDataCollection|DataCollection
+    public function index(ReadTicketTeamRequest $request): PaginatedDataCollection|DataCollection
     {
-        if (! request()->user()?->can('ticketTeam.read')) {
-            abort(403);
-        }
         $ticketTeams = QueryBuilder::for(TicketTeam::class)
             ->allowedIncludes(['ticketTeamRoles'])
             ->allowedFilters([
@@ -43,43 +42,43 @@ class TicketTeamController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRequest $request): TicketTeamData
+    public function store(CreateTicketTeamRequest $request): TicketTeamData
     {
-        $data = $request->validated();
-        $team = TicketTeam::create($data);
-        if (array_key_exists('ticket_team_role_ids', $data)) {
-            /**
-             * @var array<string>
-             */
-            $ticketTeamRoleIds = $data['ticket_team_role_ids'];
-            $tickeTeamRoles = collect($ticketTeamRoleIds)->map(fn ($ticket_team_role_id) => [
-                'role_id' => $ticket_team_role_id,
-                'ticket_team_id' => $team->id,
+        $ticketTeam = new TicketTeam;
+        $ticketTeam->name = $request->name;
+        $ticketTeam->save();
+
+        $ticketTeamRoleIds = collect($request->ticket_team_role_ids)
+            ->map(fn ($ticketTeamRoleId) => [
+                'role_id' => $ticketTeamRoleId,
             ]);
-            TicketTeamRole::insert($tickeTeamRoles->toArray());
+        if ($ticketTeamRoleIds->isNotEmpty()) {
+            $ticketTeam->ticketTeamRoles()->createMany($ticketTeamRoleIds);
         }
 
-        return TicketTeamData::from($team)->wrap('data');
+        return TicketTeamData::from($ticketTeam)->wrap('data');
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRequest $request, TicketTeam $team): TicketTeamData
+    public function update(UpdateTicketTeamRequest $request, TicketTeam $team): TicketTeamData
     {
-        $data = $request->validated();
-        $team->update($data);
-        if (array_key_exists('ticket_team_role_ids', $data)) {
+        if (! $request->name instanceof Optional) {
+            $team->name = $request->name;
+        }
+
+        if ($team->isDirty()) {
+            $team->save();
+        }
+
+        if (! $request->ticket_team_role_ids instanceof Optional && $request->ticket_team_role_ids !== null) {
             $team->ticketTeamRoles()->delete();
-            /**
-             * @var array<string>
-             */
-            $ticketTeamRoleIds = $data['ticket_team_role_ids'];
-            $tickeTeamRoles = collect($ticketTeamRoleIds)->map(fn ($ticket_team_role_id) => [
-                'role_id' => $ticket_team_role_id,
-                'ticket_team_id' => $team->id,
-            ]);
-            TicketTeamRole::insert($tickeTeamRoles->toArray());
+            $ticketTeamRoleIds = collect($request->ticket_team_role_ids)
+                ->map(fn ($ticketTeamRoleId) => [
+                    'role_id' => $ticketTeamRoleId,
+                ]);
+            $team->ticketTeamRoles()->createMany($ticketTeamRoleIds);
         }
 
         return TicketTeamData::from($team)->wrap('data');
@@ -88,7 +87,7 @@ class TicketTeamController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(TicketTeam $team): bool
+    public function destroy(DeleteTicketTeamRequest $request, TicketTeam $team): bool
     {
         if (! request()->user()?->can('ticketTeam.delete')) {
             abort(403);

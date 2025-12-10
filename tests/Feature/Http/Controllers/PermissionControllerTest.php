@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Requests\Permission\CreateRequest;
+use App\Data\Requests\CreatePermissionRequest;
 use App\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -16,12 +16,12 @@ test('owner can get templates', function () {
         ]);
 
     $data = $response->json();
-    expect($data)->toHaveKeys(CreateRequest::$models);
-    foreach (CreateRequest::$models as $model) {
-        expect($data[$model])->toContain(...CreateRequest::$operations);
+    expect($data)->toHaveKeys(CreatePermissionRequest::$models);
+    foreach (CreatePermissionRequest::$models as $model) {
+        expect($data[$model])->toContain(...CreatePermissionRequest::$operations);
     }
 
-    foreach (CreateRequest::$specialPermissions as $model => $specialPermissions) {
+    foreach (CreatePermissionRequest::$specialPermissions as $model => $specialPermissions) {
         expect($data[$model])->toContain(...$specialPermissions);
     }
 });
@@ -80,7 +80,7 @@ test('owner can create permissions', function () {
     ];
 
     $this->actingAs($user)
-        ->post(route('permission.store'), $data)
+        ->post(route('permission.store'), ['permissions' => $data])
         ->assertOk();
 
     $this->assertDatabaseHas('roles', ['name' => 'Tester']);
@@ -116,6 +116,6 @@ test('none owner can not create permissions', function () {
     ];
 
     $this->actingAs($user)
-        ->post(route('permission.store'), $data)
+        ->post(route('permission.store'), ['permissions' => $data])
         ->assertForbidden();
 });
