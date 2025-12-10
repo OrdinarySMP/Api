@@ -3,13 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Data\Requests\CreateServerContentMessageRequest;
-use App\Data\Requests\ResendServerContentMessageRequest;
+use App\Data\Requests\ReadServerContentMessageRequest;
 use App\Data\ServerContentMessageData;
 use App\Models\ServerContentMessage;
 
 class ServerContentMessageController extends Controller
 {
-    public function index(ResendServerContentMessageRequest $request): ?ServerContentMessageData
+    public function index(ReadServerContentMessageRequest $request): ?ServerContentMessageData
     {
         if (! request()->user()?->can('serverContentMessage.read')) {
             abort(403);

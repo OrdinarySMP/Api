@@ -55,12 +55,14 @@ class AppServiceProvider extends ServiceProvider
                 return function ($request, array $options) use ($handler, $user) {
                     return $handler($request, $options)->then(function ($response) use ($request, $handler, $options, $user) {
                         if ($response->getStatusCode() === 401 && $user && $user->discord_refresh_token) {
-                            $newTokens = Http::asForm()->post('https://discord.com/api/oauth2/token', [
+                            /** @var \Illuminate\Http\Client\Response $tokenResponse */
+                            $tokenResponse = Http::asForm()->post('https://discord.com/api/oauth2/token', [
                                 'client_id' => config('services.discord.client_id'),
                                 'client_secret' => config('services.discord.client_secret'),
                                 'grant_type' => 'refresh_token',
                                 'refresh_token' => $user->discord_refresh_token,
-                            ])->json();
+                            ]);
+                            $newTokens = $tokenResponse->json();
 
                             if (isset($newTokens['access_token'])) {
                                 $user->update([

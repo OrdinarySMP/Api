@@ -15,6 +15,9 @@ use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
+/**
+ * @property Optional|int<0, max>|null $application_response_id
+ */
 class UpdateApplicationSubmissionRequest extends Data
 {
     public function __construct(
