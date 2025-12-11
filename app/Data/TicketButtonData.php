@@ -9,6 +9,7 @@ use App\Models\TicketButton;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Lazy;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -33,6 +34,8 @@ class TicketButtonData extends Data
         public readonly ?Collection $ticket_button_ping_role_ids,
         public readonly ?Carbon $created_at,
         public readonly ?Carbon $updated_at,
+        public readonly Lazy|TicketTeamData $ticket_team,
+        public readonly Lazy|TicketPanelData $ticket_panel,
     ) {}
 
     public static function fromTicketButton(TicketButton $ticketButton): self
@@ -51,6 +54,8 @@ class TicketButtonData extends Data
             $ticketButton->relationLoaded('ticketButtonPingRoles') ? TicketButtonPingRoleData::collect($ticketButton->ticketButtonPingRoles)->pluck('role_id') : null,
             $ticketButton->created_at,
             $ticketButton->updated_at,
+            Lazy::whenLoaded('ticketTeam', $ticketButton, fn() => TicketTeamData::from($ticketButton->ticketTeam)),
+            Lazy::whenLoaded('ticketPanel', $ticketButton, fn() => TicketPanelData::from($ticketButton->ticketPanel)),
         );
     }
 }

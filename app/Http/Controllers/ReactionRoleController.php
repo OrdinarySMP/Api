@@ -10,6 +10,7 @@ use App\Data\Requests\UpdateReactionRoleRequest;
 use App\Models\ReactionRole;
 use App\Rules\DiscordMessageRule;
 use Illuminate\Support\Facades\Http;
+use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -22,7 +23,7 @@ class ReactionRoleController extends Controller
      *
      * @return PaginatedDataCollection<array-key, ReactionRoleData>
      */
-    public function index(ReadReactionRoleRequest $request): PaginatedDataCollection
+    public function index(ReadReactionRoleRequest $request): PaginatedDataCollection|DataCollection
     {
         if (! request()->user()?->can('reactionRole.read')) {
             abort(403);
@@ -35,6 +36,10 @@ class ReactionRoleController extends Controller
                 AllowedFilter::exact('channel_id'),
             ])
             ->getOrPaginate();
+
+        if (request()->has('full')) {
+            return ReactionRoleData::collect($reactionRoles, DataCollection::class)->wrap('data');
+        }
 
         return ReactionRoleData::collect($reactionRoles, PaginatedDataCollection::class);
     }
