@@ -54,8 +54,8 @@ class TicketButtonData extends Data
             $ticketButton->relationLoaded('ticketButtonPingRoles') ? TicketButtonPingRoleData::collect($ticketButton->ticketButtonPingRoles)->pluck('role_id') : null,
             $ticketButton->created_at,
             $ticketButton->updated_at,
-            Lazy::whenLoaded('ticketTeam', $ticketButton, fn() => TicketTeamData::from($ticketButton->ticketTeam)),
-            Lazy::whenLoaded('ticketPanel', $ticketButton, fn() => TicketPanelData::from($ticketButton->ticketPanel)),
+            Lazy::whenLoaded('ticketTeam', $ticketButton, fn () => TicketTeamData::from($ticketButton->ticketTeam)),
+            Lazy::whenLoaded('ticketPanel', $ticketButton, fn () => TicketPanelData::from($ticketButton->ticketPanel)),
         );
     }
 }
