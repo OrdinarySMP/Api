@@ -11,6 +11,7 @@ use App\Data\Requests\UpdateApplicationRequest;
 use App\Enums\ApplicationRoleType;
 use App\Models\Application;
 use Illuminate\Support\Facades\Http;
+use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\Optional;
 use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -21,9 +22,9 @@ class ApplicationController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return PaginatedDataCollection<array-key, ApplicationData>
+     * @return PaginatedDataCollection<array-key, ApplicationData>|DataCollection<array-key, ApplicationData>
      */
-    public function index(ReadApplicationRequest $request): PaginatedDataCollection
+    public function index(ReadApplicationRequest $request): PaginatedDataCollection|DataCollection
     {
         $applications = QueryBuilder::for(Application::class)
             ->allowedIncludes([
@@ -49,6 +50,10 @@ class ApplicationController extends Controller
                 'name',
             ])
             ->getOrPaginate();
+
+        if (request()->has('full')) {
+            return ApplicationData::collect($applications, DataCollection::class)->wrap('data');
+        }
 
         return ApplicationData::collect($applications, PaginatedDataCollection::class);
     }

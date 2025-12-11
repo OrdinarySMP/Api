@@ -21,9 +21,9 @@ class ApplicationSubmissionController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return PaginatedDataCollection<array-key, ApplicationSubmissionData>
+     * @return PaginatedDataCollection<array-key, ApplicationSubmissionData>|DataCollection<array-key, ApplicationSubmissionData>
      */
-    public function index(ReadApplicationSubmissionRequest $request): PaginatedDataCollection
+    public function index(ReadApplicationSubmissionRequest $request): PaginatedDataCollection|DataCollection
     {
         $applicationSubmissions = QueryBuilder::for(ApplicationSubmission::class)
             ->allowedIncludes([
@@ -44,6 +44,10 @@ class ApplicationSubmissionController extends Controller
                 'submitted_at',
             ])
             ->getOrPaginate();
+
+        if (request()->has('full')) {
+            return ApplicationSubmissionData::collect($applicationSubmissions, DataCollection::class)->wrap('data');
+        }
 
         return ApplicationSubmissionData::collect($applicationSubmissions, PaginatedDataCollection::class);
     }

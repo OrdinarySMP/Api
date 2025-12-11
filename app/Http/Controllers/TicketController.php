@@ -11,6 +11,7 @@ use App\Models\Ticket;
 use App\Models\TicketButton;
 use App\Repositories\TicketRepository;
 use Illuminate\Support\Facades\Http;
+use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\PaginatedDataCollection;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -24,9 +25,9 @@ class TicketController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return PaginatedDataCollection<array-key, TicketData>
+     * @return PaginatedDataCollection<array-key, TicketData>|DataCollection<array-key, TicketData>
      */
-    public function index(ReadTicketRequest $request): PaginatedDataCollection
+    public function index(ReadTicketRequest $request): PaginatedDataCollection|DataCollection
     {
         $tickets = QueryBuilder::for(Ticket::class)
             ->allowedIncludes(['ticketButton.ticketTeam.ticketTeamRoles', 'ticketTranscripts'])
@@ -36,6 +37,10 @@ class TicketController extends Controller
                 AllowedFilter::exact('state'),
             ])
             ->getOrPaginate();
+
+        if (request()->has('full')) {
+            return TicketData::collect($tickets, DataCollection::class)->wrap('data');
+        }
 
         return TicketData::collect($tickets, PaginatedDataCollection::class);
     }

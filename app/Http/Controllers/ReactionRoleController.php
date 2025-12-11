@@ -21,7 +21,7 @@ class ReactionRoleController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return PaginatedDataCollection<array-key, ReactionRoleData>
+     * @return PaginatedDataCollection<array-key, ReactionRoleData>|DataCollection<array-key, ReactionRoleData>
      */
     public function index(ReadReactionRoleRequest $request): PaginatedDataCollection|DataCollection
     {
