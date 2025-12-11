@@ -14,16 +14,16 @@ class MemberData extends Data
         public readonly ?string $avatar,
         public readonly ?string $banner,
         public readonly ?string $communication_disabled_until,
-        public readonly int $flags,
+        public readonly ?int $flags,
         public readonly ?string $joined_at,
         public readonly ?string $nick,
         public readonly ?bool $pending,
         public readonly ?string $premium_since,
-        /** @var string[] */
-        public readonly array $roles,
+        /** @var ?string[] */
+        public readonly ?array $roles,
         public readonly ?string $unusual_dm_activity_until,
         public readonly ?UserData $user,
-        public readonly bool $mute,
-        public readonly bool $deaf,
+        public readonly ?bool $mute,
+        public readonly ?bool $deaf,
     ) {}
 }
