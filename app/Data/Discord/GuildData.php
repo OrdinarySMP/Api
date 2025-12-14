@@ -11,9 +11,9 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 class GuildData extends Data
 {
     public function __construct(
-        public readonly string $identity_guild_id,
-        public readonly string $identity_enabled,
-        public readonly string $tag,
-        public readonly string $badge,
+        public readonly ?string $identity_guild_id,
+        public readonly ?string $identity_enabled,
+        public readonly ?string $tag,
+        public readonly ?string $badge,
     ) {}
 }
