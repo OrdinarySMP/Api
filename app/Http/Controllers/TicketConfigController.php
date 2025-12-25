@@ -22,8 +22,10 @@ class TicketConfigController extends Controller
 
     /**
      * Display a listing of the resource.
+     *
+     * @return TicketConfigData|array{data:null}
      */
-    public function index(ReadTicketConfigRequest $request): TicketConfigData
+    public function index(ReadTicketConfigRequest $request): TicketConfigData|array
     {
         $guild_id = config('services.discord.server_id');
 
@@ -31,7 +33,9 @@ class TicketConfigController extends Controller
             $guild_id = request()->input('filter[guild_id]', $guild_id);
         }
 
-        return TicketConfigData::from(TicketConfig::where('guild_id', $guild_id)->first())->wrap('data');
+        $ticketConfig = TicketConfig::where('guild_id', $guild_id)->first();
+
+        return $ticketConfig ? TicketConfigData::from($ticketConfig)->wrap('data') : ['data' => null];
     }
 
     /**
