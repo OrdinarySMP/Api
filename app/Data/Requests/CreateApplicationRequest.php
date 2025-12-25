@@ -19,22 +19,22 @@ class CreateApplicationRequest extends Data
         public readonly string $confirmation_message,
         public readonly string $completion_message,
         public readonly ?string $activity_channel,
-        /** @var array<string> */
-        public readonly array $restricted_role_ids,
-        /** @var array<string> */
-        public readonly array $accepted_role_ids,
-        /** @var array<string> */
-        public readonly array $denied_role_ids,
-        /** @var array<string> */
-        public readonly array $ping_role_ids,
-        /** @var array<string> */
-        public readonly array $accept_removal_role_ids,
-        /** @var array<string> */
-        public readonly array $deny_removal_role_ids,
-        /** @var array<string> */
-        public readonly array $pending_role_ids,
-        /** @var array<string> */
-        public readonly array $required_role_ids,
+        /** @var ?array<string> */
+        public readonly ?array $restricted_role_ids,
+        /** @var ?array<string> */
+        public readonly ?array $accepted_role_ids,
+        /** @var ?array<string> */
+        public readonly ?array $denied_role_ids,
+        /** @var ?array<string> */
+        public readonly ?array $ping_role_ids,
+        /** @var ?array<string> */
+        public readonly ?array $accept_removal_role_ids,
+        /** @var ?array<string> */
+        public readonly ?array $deny_removal_role_ids,
+        /** @var ?array<string> */
+        public readonly ?array $pending_role_ids,
+        /** @var ?array<string> */
+        public readonly ?array $required_role_ids,
         #[Max(20)]
         public readonly ?string $embed_channel_id,
         #[Max(100)]
