@@ -11,6 +11,7 @@ use App\Repositories\DiscordRepository;
 use Carbon\Carbon as CCarbon;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Data;
+use Spatie\LaravelData\Lazy;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
@@ -32,6 +33,7 @@ class ApplicationSubmissionData extends Data
         /** @var ?Collection<array-key, ApplicationQuestionAnswerData> */
         #[LiteralTypeScriptType('ApplicationQuestionAnswerData[]')]
         public readonly ?Collection $application_question_answers,
+        public readonly Lazy|ApplicationResponseData $application_response,
         public readonly ?CCarbon $created_at,
         public readonly ?CCarbon $updated_at,
         public readonly ?MemberData $member,
@@ -60,6 +62,7 @@ class ApplicationSubmissionData extends Data
             $applicationSubmission->application_id,
             $applicationSubmission->application ? ApplicationData::from($applicationSubmission->application) : null,
             ApplicationQuestionAnswerData::collect($applicationSubmission->applicationQuestionAnswers),
+            Lazy::whenLoaded('applicationResponse', $applicationSubmission, fn () => ApplicationResponseData::from($applicationSubmission->applicationResponse)),
             $applicationSubmission->created_at,
             $applicationSubmission->updated_at,
             $member,
