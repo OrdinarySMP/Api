@@ -13,6 +13,6 @@ class ReadTicketRequest extends Data
     public static function authorize(
         #[CurrentUser] User $user,
     ): bool {
-        return $user->can('ticket.read');
+        return $user->canany(['ticket.read', 'ticket.read-own']);
     }
 }
