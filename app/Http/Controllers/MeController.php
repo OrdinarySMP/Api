@@ -37,12 +37,12 @@ class MeController extends Controller
             abort(403, 'You oauth2 token expired. Please login with Discord');
         }
 
-        if (! in_array(config('services.discord.required_role'), $discordGuildUser['roles'])) {
-            Cache::forget('user-'.$user->id);
-            Auth::guard('web')->logout();
+        // if (! in_array(config('services.discord.required_role'), $discordGuildUser['roles'])) {
+        //     Cache::forget('user-'.$user->id);
+        //     Auth::guard('web')->logout();
 
-            abort(403, 'You do not have the required permissions.');
-        }
+        //     abort(403, 'You do not have the required permissions.');
+        // }
 
         $roles = Role::whereIn('name', $discordGuildUser['roles'])->get()->pluck('name');
 

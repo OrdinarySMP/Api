@@ -34,9 +34,9 @@ class DiscordController extends Controller
             abort(404);
         }
 
-        if (! in_array(config('services.discord.required_role'), $json['roles'])) {
-            abort(404);
-        }
+        // if (! in_array(config('services.discord.required_role'), $json['roles'])) {
+        //     abort(404);
+        // }
 
         $user = User::updateOrCreate([
             'discord_id' => $user->id,
