@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -10,8 +11,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $heading
  * @property string $not_recommended
  * @property string $recommended
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ServerContentMessage newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ServerContentMessage newQuery()

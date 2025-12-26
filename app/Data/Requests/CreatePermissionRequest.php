@@ -48,6 +48,12 @@ class CreatePermissionRequest extends Data
         'serverContent' => [
             'resend',
         ],
+        'ticket' => [
+            'read-own',
+        ],
+        'ticketTranscript' => [
+            'read-own',
+        ],
     ];
 
     public function __construct(
@@ -60,7 +66,7 @@ class CreatePermissionRequest extends Data
     public static function authorize(
         #[CurrentUser] User $user,
     ): bool {
-        return $user->can('permission.read');
+        return $user->can('permission.create');
     }
 
     /**

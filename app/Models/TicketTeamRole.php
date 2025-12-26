@@ -2,17 +2,19 @@
 
 namespace App\Models;
 
+use Database\Factories\TicketTeamRoleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $ticket_team_id
  * @property string $role_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\TicketTeam|null $ticketTeamRoles
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read TicketTeam|null $ticketTeamRoles
  *
  * @method static \Database\Factories\TicketTeamRoleFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|TicketTeamRole newModelQuery()
@@ -28,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class TicketTeamRole extends Model
 {
-    /** @use HasFactory<\Database\Factories\TicketTeamRoleFactory> */
+    /** @use HasFactory<TicketTeamRoleFactory> */
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

@@ -11,10 +11,6 @@ class ServerContentMessageController extends Controller
 {
     public function index(ReadServerContentMessageRequest $request): ?ServerContentMessageData
     {
-        if (! request()->user()?->can('serverContentMessage.read')) {
-            abort(403);
-        }
-
         $messages = ServerContentMessage::where('server_id', config('services.discord.server_id'))->first();
 
         return $messages ? ServerContentMessageData::from($messages) : null;

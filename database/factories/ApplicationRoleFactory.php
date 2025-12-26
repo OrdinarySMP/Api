@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Enums\ApplicationRoleType;
 use App\Models\Application;
+use App\Models\ApplicationRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ApplicationRole>
+ * @extends Factory<ApplicationRole>
  */
 class ApplicationRoleFactory extends Factory
 {

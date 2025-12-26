@@ -12,6 +12,7 @@ use App\Data\Discord\Embed\ThumbnailData;
 use App\Data\Discord\MemberData;
 use App\Enums\ApplicationSubmissionState;
 use App\Models\ApplicationSubmission;
+use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
@@ -227,7 +228,7 @@ class ApplicationSubmissionRepository
         $joinedAt = Carbon::parse($member->joined_at)->timestamp;
 
         $submittedAt = ($applicationSubmission->submitted_at ?? now());
-        $duration = $submittedAt->diffForHumans($applicationSubmission->created_at, \Carbon\CarbonInterface::DIFF_ABSOLUTE);
+        $duration = $submittedAt->diffForHumans($applicationSubmission->created_at, CarbonInterface::DIFF_ABSOLUTE);
         $tag = $member->user?->primary_guild?->tag ? $member->user->primary_guild->tag : '---';
         $stats =
             "**User ID:** {$applicationSubmission->discord_id}\n".
@@ -439,12 +440,13 @@ class ApplicationSubmissionRepository
 
     private function getAcceptActionRow(ApplicationSubmission $applicationSubmission): ?ActionRowData
     {
-        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
+        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending ||
+            ! $applicationSubmission->application) {
             return null;
         }
 
         /** @var Collection<int, StringCollectorOptionData> $options */
-        $options = StringCollectorOptionData::collect($applicationSubmission->application?->acceptedResponses()->limit(25)->get() ?? []);
+        $options = StringCollectorOptionData::collect($applicationSubmission->application->acceptedResponses()->limit(25)->get());
 
         if ($options->isEmpty()) {
             return null;
@@ -462,12 +464,13 @@ class ApplicationSubmissionRepository
 
     private function getDenyActionRow(ApplicationSubmission $applicationSubmission): ?ActionRowData
     {
-        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
+        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending ||
+            ! $applicationSubmission->application) {
             return null;
         }
 
         /** @var Collection<int, StringCollectorOptionData> $options */
-        $options = StringCollectorOptionData::collect($applicationSubmission->application?->deniedResponses()->limit(25)->get() ?? []);
+        $options = StringCollectorOptionData::collect($applicationSubmission->application->deniedResponses()->limit(25)->get());
 
         if ($options->isEmpty()) {
             return null;

@@ -3,11 +3,14 @@
 namespace App\Providers;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use SocialiteProviders\Discord\Provider;
+use SocialiteProviders\Manager\SocialiteWasCalled;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -38,8 +41,8 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole(['Owner', 'Bot']) ? true : null;
         });
 
-        Event::listen(function (\SocialiteProviders\Manager\SocialiteWasCalled $event) {
-            $event->extendSocialite('discord', \SocialiteProviders\Discord\Provider::class);
+        Event::listen(function (SocialiteWasCalled $event) {
+            $event->extendSocialite('discord', Provider::class);
         });
 
         Http::macro('discord', function (?string $token = null) {
@@ -55,7 +58,7 @@ class AppServiceProvider extends ServiceProvider
                 return function ($request, array $options) use ($handler, $user) {
                     return $handler($request, $options)->then(function ($response) use ($request, $handler, $options, $user) {
                         if ($response->getStatusCode() === 401 && $user && $user->discord_refresh_token) {
-                            /** @var \Illuminate\Http\Client\Response $tokenResponse */
+                            /** @var Response $tokenResponse */
                             $tokenResponse = Http::asForm()->post('https://discord.com/api/oauth2/token', [
                                 'client_id' => config('services.discord.client_id'),
                                 'client_secret' => config('services.discord.client_secret'),

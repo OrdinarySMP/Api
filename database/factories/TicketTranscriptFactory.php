@@ -3,10 +3,11 @@
 namespace Database\Factories;
 
 use App\Models\Ticket;
+use App\Models\TicketTranscript;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TicketTranscript>
+ * @extends Factory<TicketTranscript>
  */
 class TicketTranscriptFactory extends Factory
 {

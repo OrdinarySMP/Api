@@ -13,6 +13,6 @@ class DeleteApplicationQuestionAnswerRequest extends Data
     public static function authorize(
         #[CurrentUser] User $user,
     ): bool {
-        return $user->can('applicationQuestionAnswer.delete');
+        return $user->can('applicationAnswerQuestion.delete');
     }
 }

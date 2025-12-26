@@ -93,10 +93,6 @@ class ApplicationQuestionAnswerController extends Controller
      */
     public function destroy(DeleteApplicationQuestionAnswerRequest $request, ApplicationQuestionAnswer $applicationQuestionAnswer): bool
     {
-        if (! request()->user()?->can('applicationQuestionAnswer.delete')) {
-            abort(403);
-        }
-
         return $applicationQuestionAnswer->delete() ?? false;
     }
 }

@@ -2,9 +2,12 @@
 
 namespace App\Models;
 
+use Database\Factories\TicketPanelFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -12,9 +15,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $message
  * @property string $embed_color
  * @property string $channel_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TicketButton> $ticketButtons
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, TicketButton> $ticketButtons
  * @property-read int|null $ticket_buttons_count
  *
  * @method static \Database\Factories\TicketPanelFactory factory($count = null, $state = [])
@@ -33,7 +36,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class TicketPanel extends Model
 {
-    /** @use HasFactory<\Database\Factories\TicketPanelFactory> */
+    /** @use HasFactory<TicketPanelFactory> */
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

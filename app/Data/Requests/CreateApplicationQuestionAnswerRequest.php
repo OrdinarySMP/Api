@@ -23,6 +23,6 @@ class CreateApplicationQuestionAnswerRequest extends Data
     public static function authorize(
         #[CurrentUser] User $user,
     ): bool {
-        return $user->can('applicationQuestionAnswer.create');
+        return $user->can('applicationAnswerQuestion.create');
     }
 }

@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Enums\ApplicationSubmissionState;
 use App\Models\ApplicationResponse;
+use App\Models\ApplicationSubmission;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ApplicationSubmission>
+ * @extends Factory<ApplicationSubmission>
  */
 class ApplicationSubmissionFactory extends Factory
 {

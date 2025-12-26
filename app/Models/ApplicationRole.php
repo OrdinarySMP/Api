@@ -3,18 +3,20 @@
 namespace App\Models;
 
 use App\Enums\ApplicationRoleType;
+use Database\Factories\ApplicationRoleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $application_id
  * @property string $role_id
  * @property ApplicationRoleType $type
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Application|null $application
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Application|null $application
  *
  * @method static \Database\Factories\ApplicationRoleFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationRole newModelQuery()
@@ -31,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ApplicationRole extends Model
 {
-    /** @use HasFactory<\Database\Factories\ApplicationRoleFactory> */
+    /** @use HasFactory<ApplicationRoleFactory> */
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

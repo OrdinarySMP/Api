@@ -313,10 +313,6 @@ class ApplicationController extends Controller
      */
     public function destroy(DeleteApplicationRequest $request, Application $application): bool
     {
-        if (! request()->user()?->can('application.delete')) {
-            abort(403);
-        }
-
         return $application->delete() ?? false;
     }
 

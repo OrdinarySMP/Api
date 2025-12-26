@@ -4,10 +4,11 @@ namespace Database\Factories;
 
 use App\Enums\ApplicationResponseType;
 use App\Models\Application;
+use App\Models\Faq;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Faq>
+ * @extends Factory<Faq>
  */
 class ApplicationResponseFactory extends Factory
 {

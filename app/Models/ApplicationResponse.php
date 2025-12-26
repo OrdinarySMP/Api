@@ -3,19 +3,21 @@
 namespace App\Models;
 
 use App\Enums\ApplicationResponseType;
+use Database\Factories\ApplicationResponseFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property ApplicationResponseType $type
  * @property string $name
  * @property string $response
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property int $application_id
  *
  * @method static \Database\Factories\ApplicationResponseFactory factory($count = null, $state = [])
@@ -30,12 +32,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationResponse whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationResponse whereUpdatedAt($value)
  *
- * @property-read \App\Models\Application|null $application
+ * @property-read Application|null $application
  *
  * @method static Builder<static>|ApplicationResponse accepted()
  * @method static Builder<static>|ApplicationResponse denied()
  *
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $deleted_at
  *
  * @method static Builder<static>|ApplicationResponse onlyTrashed()
  * @method static Builder<static>|ApplicationResponse whereDeletedAt($value)
@@ -46,7 +48,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class ApplicationResponse extends Model
 {
-    /** @use HasFactory<\Database\Factories\ApplicationResponseFactory> */
+    /** @use HasFactory<ApplicationResponseFactory> */
     use HasFactory, SoftDeletes;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

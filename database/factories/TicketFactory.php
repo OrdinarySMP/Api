@@ -3,11 +3,12 @@
 namespace Database\Factories;
 
 use App\Enums\TicketState;
+use App\Models\Ticket;
 use App\Models\TicketButton;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Ticket>
+ * @extends Factory<Ticket>
  */
 class TicketFactory extends Factory
 {

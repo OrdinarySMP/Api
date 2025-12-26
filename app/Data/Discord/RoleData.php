@@ -7,11 +7,11 @@ namespace App\Data\Discord;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 
-#[TypeScript('DiscordGuildData')]
-class GuildData extends Data
+#[TypeScript('DiscordRoleData')]
+class RoleData extends Data
 {
     public function __construct(
         public readonly string $id,
-        public readonly string $owner_id,
+        public readonly string $name,
     ) {}
 }

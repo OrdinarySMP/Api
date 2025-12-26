@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Enums\DiscordButton;
+use Database\Factories\TicketButtonFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -17,14 +20,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $initial_message
  * @property string $emoji
  * @property string $naming_scheme
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property bool $disabled
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TicketButtonPingRole> $ticketButtonPingRoles
+ * @property-read Collection<int, TicketButtonPingRole> $ticketButtonPingRoles
  * @property-read int|null $ticket_button_ping_roles_count
- * @property-read \App\Models\TicketPanel|null $ticketPanel
- * @property-read \App\Models\TicketTeam|null $ticketTeam
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Ticket> $tickets
+ * @property-read TicketPanel|null $ticketPanel
+ * @property-read TicketTeam|null $ticketTeam
+ * @property-read Collection<int, Ticket> $tickets
  * @property-read int|null $tickets_count
  *
  * @method static \Database\Factories\TicketButtonFactory factory($count = null, $state = [])
@@ -47,7 +50,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class TicketButton extends Model
 {
-    /** @use HasFactory<\Database\Factories\TicketButtonFactory> */
+    /** @use HasFactory<TicketButtonFactory> */
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

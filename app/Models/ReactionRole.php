@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use Database\Factories\ReactionRoleFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -11,8 +13,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $channel_id
  * @property string $emoji
  * @property string $role_id
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  *
  * @method static \Database\Factories\ReactionRoleFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ReactionRole newModelQuery()
@@ -30,7 +32,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ReactionRole extends Model
 {
-    /** @use HasFactory<\Database\Factories\ReactionRoleFactory> */
+    /** @use HasFactory<ReactionRoleFactory> */
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

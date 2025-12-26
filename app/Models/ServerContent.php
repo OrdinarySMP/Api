@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use Database\Factories\ServerContentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * App\Models\Feed
@@ -17,8 +19,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $url
  * @property string $description
  * @property bool $is_recommended
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  *
  * @method static \Database\Factories\ServerContentFactory factory($count = null, $state = [])
  * @method static Builder<static>|ServerContent newModelQuery()
@@ -43,7 +45,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ServerContent extends Model
 {
-    /** @use HasFactory<\Database\Factories\ServerContentFactory> */
+    /** @use HasFactory<ServerContentFactory> */
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

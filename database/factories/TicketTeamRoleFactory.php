@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\TicketTeamRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TicketTeamRole>
+ * @extends Factory<TicketTeamRole>
  */
 class TicketTeamRoleFactory extends Factory
 {
