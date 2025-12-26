@@ -5,10 +5,13 @@ namespace App\Models;
 use App\Enums\ApplicationResponseType;
 use App\Enums\ApplicationRoleType;
 use App\Enums\DiscordButton;
+use Database\Factories\ApplicationFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -20,8 +23,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $deny_message
  * @property string $confirmation_message
  * @property string $completion_message
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  *
  * @method static \Database\Factories\ApplicationFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Application newModelQuery()
@@ -39,34 +42,34 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Application whereUpdatedAt($value)
  *
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $acceptRemovalRoles
+ * @property-read Collection<int, ApplicationRole> $acceptRemovalRoles
  * @property-read int|null $accept_removal_roles_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationResponse> $acceptedResponses
+ * @property-read Collection<int, ApplicationResponse> $acceptedResponses
  * @property-read int|null $accepted_responses_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $acceptedRoles
+ * @property-read Collection<int, ApplicationRole> $acceptedRoles
  * @property-read int|null $accepted_roles_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationQuestion> $applicationQuestions
+ * @property-read Collection<int, ApplicationQuestion> $applicationQuestions
  * @property-read int|null $application_questions_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationResponse> $applicationResponses
+ * @property-read Collection<int, ApplicationResponse> $applicationResponses
  * @property-read int|null $application_responses_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $applicationRoles
+ * @property-read Collection<int, ApplicationRole> $applicationRoles
  * @property-read int|null $application_roles_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationSubmission> $applicationSubmissions
+ * @property-read Collection<int, ApplicationSubmission> $applicationSubmissions
  * @property-read int|null $application_submissions_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationResponse> $deniedResponses
+ * @property-read Collection<int, ApplicationResponse> $deniedResponses
  * @property-read int|null $denied_responses_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $deniedRoles
+ * @property-read Collection<int, ApplicationRole> $deniedRoles
  * @property-read int|null $denied_roles_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $denyRemovalRoles
+ * @property-read Collection<int, ApplicationRole> $denyRemovalRoles
  * @property-read int|null $deny_removal_roles_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $pendingRoles
+ * @property-read Collection<int, ApplicationRole> $pendingRoles
  * @property-read int|null $pending_roles_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $pingRoles
+ * @property-read Collection<int, ApplicationRole> $pingRoles
  * @property-read int|null $ping_roles_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $restrictedRoles
+ * @property-read Collection<int, ApplicationRole> $restrictedRoles
  * @property-read int|null $restricted_roles_count
  * @property bool $is_active
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $deleted_at
  * @property string|null $embed_channel_id
  * @property string|null $embed_title
  * @property string|null $embed_description
@@ -74,7 +77,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $embed_button_text
  * @property DiscordButton|null $embed_button_color
  * @property string|null $activity_channel
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationRole> $requiredRoles
+ * @property-read Collection<int, ApplicationRole> $requiredRoles
  * @property-read int|null $required_roles_count
  *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Application onlyTrashed()
@@ -94,7 +97,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Application extends Model
 {
-    /** @use HasFactory<\Database\Factories\ApplicationFactory> */
+    /** @use HasFactory<ApplicationFactory> */
     use HasFactory, SoftDeletes;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

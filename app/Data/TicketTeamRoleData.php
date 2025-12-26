@@ -26,13 +26,13 @@ class TicketTeamRoleData extends Data
     {
         $discordRepository = new DiscordRepository;
 
-        $role = $discordRepository->roles()->first(fn ($role) => $role['id'] === $ticketTeamRole->role_id);
+        $role = $discordRepository->roles()?->first(fn ($role) => $role->id === $ticketTeamRole->role_id);
 
         return new self(
             $ticketTeamRole->id,
             $ticketTeamRole->ticket_team_id,
             $ticketTeamRole->role_id,
-            $role ? $role['name'] : 'role-not-found',
+            $role->name ?? 'role-not-found',
             $ticketTeamRole->created_at,
             $ticketTeamRole->updated_at,
         );

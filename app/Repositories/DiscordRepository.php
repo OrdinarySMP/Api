@@ -2,7 +2,9 @@
 
 namespace App\Repositories;
 
+use App\Data\Discord\GuildData;
 use App\Data\Discord\MemberData;
+use App\Data\Discord\RoleData;
 use App\Data\Discord\UserData;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -12,20 +14,39 @@ use Illuminate\Support\Facades\Log;
 class DiscordRepository
 {
     /**
-     * @return Collection<int, array<string>>
+     * @return ?Collection<int, RoleData>
      */
-    public function roles(): Collection
+    public function roles(): ?Collection
     {
-        /**
-         * @var array<array<string>>
-         */
         $roles = Cache::remember('discord-'.config('services.discord.server_id').'-roles', 300, function () {
             $response = Http::discordBot()->get('/guilds/'.config('services.discord.server_id').'/roles');
 
             return $response->json();
         });
+        try {
+            $roleData = RoleData::collect($roles, Collection::class);
+        } catch (\Exception $e) {
+            Log::error('Could not parse user into RoleData:', [
+                'error' => $e,
+                'roles' => $roles,
+            ]);
+            $roleData = null;
+        }
 
-        return collect($roles);
+        return $roleData;
+    }
+
+    public function everyoneRole(): ?RoleData
+    {
+        $everyoneRole = $this->roles()?->firstWhere('name', '@everyone');
+        if (! $everyoneRole) {
+            return null;
+        }
+
+        return Cache::remember(
+            'discord-'.config('services.discord.server_id').'-role-everyone', 60 * 60 * 24 * 7, // save for 7 days
+            fn () => $everyoneRole
+        );
     }
 
     /**
@@ -36,13 +57,13 @@ class DiscordRepository
         /**
          * @var array<array<mixed>>
          */
-        $roles = Cache::remember('discord-'.config('services.discord.server_id').'-channels', 300, function () {
+        $channels = Cache::remember('discord-'.config('services.discord.server_id').'-channels', 300, function () {
             $response = Http::discordBot()->get('/guilds/'.config('services.discord.server_id').'/channels');
 
             return $response->json();
         });
 
-        return collect($roles);
+        return collect($channels);
     }
 
     /**
@@ -67,10 +88,7 @@ class DiscordRepository
         return $textChannels;
     }
 
-    /**
-     * @return Collection<int, mixed>
-     */
-    public function guild(): Collection
+    public function guild(): ?GuildData
     {
         /**
          * @var array<array<mixed>>
@@ -81,13 +99,20 @@ class DiscordRepository
             return $response->json();
         });
 
-        return collect($guild);
+        try {
+            $guildData = GuildData::from($guild);
+        } catch (\Exception $e) {
+            Log::error('Could not parse guild into GuildData:', [
+                'error' => $e,
+                'guild' => $guild,
+            ]);
+            $guildData = null;
+        }
+
+        return $guildData;
     }
 
-    /**
-     * @return Collection<int, mixed>
-     */
-    public function currentUser(): Collection
+    public function currentUser(): ?MemberData
     {
         /**
          * @var array<array<mixed>>
@@ -98,7 +123,17 @@ class DiscordRepository
             return $response->json();
         });
 
-        return collect($currentUser);
+        try {
+            $currentUserData = MemberData::from($currentUser);
+        } catch (\Exception $e) {
+            Log::error('Could not parse currentUser into MemberData:', [
+                'error' => $e,
+                'currentUser' => $currentUser,
+            ]);
+            $currentUserData = null;
+        }
+
+        return $currentUserData;
     }
 
     public function getUserById(string $userId): ?UserData

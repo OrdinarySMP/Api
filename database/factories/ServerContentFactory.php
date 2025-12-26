@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\ServerContent;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ServerContent>
+ * @extends Factory<ServerContent>
  */
 class ServerContentFactory extends Factory
 {
@@ -23,5 +24,32 @@ class ServerContentFactory extends Factory
             'is_recommended' => fake()->boolean(),
             'is_active' => fake()->boolean(),
         ];
+    }
+
+    public function recommended(): static
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'is_recommended' => true,
+            ];
+        });
+    }
+
+    public function notRecommended(): static
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'is_recommended' => false,
+            ];
+        });
+    }
+
+    public function active(): static
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'is_active' => true,
+            ];
+        });
     }
 }

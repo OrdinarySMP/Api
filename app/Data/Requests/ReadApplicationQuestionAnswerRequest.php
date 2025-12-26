@@ -13,6 +13,6 @@ class ReadApplicationQuestionAnswerRequest extends Data
     public static function authorize(
         #[CurrentUser] User $user,
     ): bool {
-        return $user->can('applicationQuestionAnswer.read');
+        return $user->can('applicationAnswerQuestion.read');
     }
 }

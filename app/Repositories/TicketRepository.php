@@ -32,11 +32,7 @@ class TicketRepository
 
     public function createForButton(TicketButton $ticketButton, CreateTicketRequest $request): Ticket
     {
-        $roles = $this->discordRepository->roles();
-        /**
-         * @var array{id:string} $everyoneRole
-         */
-        $everyoneRole = $roles->firstWhere('name', '@everyone');
+        $everyoneRole = $this->discordRepository->everyoneRole();
 
         $ticket = Ticket::create([
             'ticket_button_id' => $request->ticket_button_id,
@@ -67,7 +63,7 @@ class TicketRepository
             'parent_id' => $ticketConfig->category_id,
             'permission_overwrites' => [
                 [
-                    'id' => $everyoneRole['id'], // everyone
+                    'id' => $everyoneRole?->id, // everyone
                     'type' => 0, // role
                     'deny' => 1 << 10, // view channel permission
                 ],
@@ -156,15 +152,61 @@ class TicketRepository
          */
         $ticketConfig = TicketConfig::where('guild_id', $guildId)->first();
 
-        $buttons = collect([
-            ButtonData::link(
-                'Transcript',
-                config('services.frontend.base_url').'/ticket/transcript/'.$ticket->id,
-            ),
+        $buttons = collect([$this->getTranscriptButton($ticket)]);
+        $response = Http::discordBot()->post('/channels/'.$ticketConfig->transcript_channel_id.'/messages', [
+            'embeds' => collect([$this->getTranscriptEmbed($ticket)]),
+            'components' => [
+                new ActionRowData(components: $buttons),
+            ],
         ]);
 
-        $embed = new EmbedData(
-            title: 'Ticket Closes',
+        $this->sendTranscriptToMember($ticket);
+
+        return $response->ok();
+    }
+
+    private function sendTranscriptToMember(Ticket $ticket): bool
+    {
+        $createdByMember = $this->discordRepository->getGuildMemberById($ticket->created_by_discord_user_id);
+        if (! $createdByMember?->roles) {
+            return false;
+        }
+
+        $teamRoleIds = $ticket->ticketButton?->ticketTeam?->ticketTeamRoles->pluck('role_id');
+        $intersect = $teamRoleIds?->intersect($createdByMember->roles);
+        if (! $intersect?->isEmpty()) {
+            return false;
+        }
+
+        $channelResponse = Http::discordBot()->post('/users/@me/channels', ['recipient_id' => $ticket->created_by_discord_user_id]);
+        if ($channelResponse->failed()) {
+            return false;
+        }
+
+        $channel = $channelResponse->json();
+        $buttons = collect([$this->getTranscriptButton($ticket)]);
+        $channelResponse = Http::discordBot()->post('/channels/'.$channel['id'].'/messages', [
+            'embeds' => collect([$this->getTranscriptEmbed($ticket)]),
+            'components' => [
+                new ActionRowData(components: $buttons),
+            ],
+        ]);
+
+        return $channelResponse->ok();
+    }
+
+    private function getTranscriptButton(Ticket $ticket): ButtonData
+    {
+        return ButtonData::link(
+            'Transcript',
+            config('services.frontend.base_url').'/ticket/transcript/'.$ticket->id,
+        );
+    }
+
+    private function getTranscriptEmbed(Ticket $ticket): EmbedData
+    {
+        return new EmbedData(
+            title: 'Ticket Closed',
             color: (string) hexdec('22e629'), // Green
             fields: collect([
                 new FieldsData(
@@ -203,13 +245,5 @@ class TicketRepository
                 ),
             ]),
         );
-        $response = Http::discordBot()->post('/channels/'.$ticketConfig->transcript_channel_id.'/messages', [
-            'embeds' => collect([$embed]),
-            'components' => [
-                new ActionRowData(components: $buttons),
-            ],
-        ]);
-
-        return $response->ok();
     }
 }

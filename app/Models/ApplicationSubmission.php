@@ -4,12 +4,15 @@ namespace App\Models;
 
 use App\Enums\ApplicationSubmissionState;
 use App\Observers\ApplicationSubmissionObserver;
+use Database\Factories\ApplicationSubmissionFactory;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 #[ObservedBy([ApplicationSubmissionObserver::class])]
 /**
@@ -19,16 +22,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ApplicationSubmissionState $state
  * @property int|null $application_response_id
  * @property string|null $custom_response
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  * @property string|null $message_id
  * @property string|null $channel_id
  * @property string|null $handled_by
  * @property int|null $application_id
- * @property-read \App\Models\Application|null $application
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ApplicationQuestionAnswer> $applicationQuestionAnswers
+ * @property-read Application|null $application
+ * @property-read Collection<int, ApplicationQuestionAnswer> $applicationQuestionAnswers
  * @property-read int|null $application_question_answers_count
- * @property-read \App\Models\ApplicationResponse|null $applicationResponse
+ * @property-read ApplicationResponse|null $applicationResponse
  *
  * @method static \Database\Factories\ApplicationSubmissionFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ApplicationSubmission newModelQuery()
@@ -52,7 +55,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class ApplicationSubmission extends Model
 {
-    /** @use HasFactory<\Database\Factories\ApplicationSubmissionFactory> */
+    /** @use HasFactory<ApplicationSubmissionFactory> */
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

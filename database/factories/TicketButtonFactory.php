@@ -3,12 +3,13 @@
 namespace Database\Factories;
 
 use App\Enums\DiscordButton;
+use App\Models\TicketButton;
 use App\Models\TicketPanel;
 use App\Models\TicketTeam;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\TicketButton>
+ * @extends Factory<TicketButton>
  */
 class TicketButtonFactory extends Factory
 {

@@ -2,18 +2,21 @@
 
 namespace App\Models;
 
+use Database\Factories\TicketTeamFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property string $name
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TicketButton> $ticketButtons
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, TicketButton> $ticketButtons
  * @property-read int|null $ticket_buttons_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TicketTeamRole> $ticketTeamRoles
+ * @property-read Collection<int, TicketTeamRole> $ticketTeamRoles
  * @property-read int|null $ticket_team_roles_count
  *
  * @method static \Database\Factories\TicketTeamFactory factory($count = null, $state = [])
@@ -29,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class TicketTeam extends Model
 {
-    /** @use HasFactory<\Database\Factories\TicketTeamFactory> */
+    /** @use HasFactory<TicketTeamFactory> */
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

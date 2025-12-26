@@ -24,6 +24,6 @@ class SetupTicketConfigRequest extends Data
     public static function authorize(
         #[CurrentUser] User $user,
     ): bool {
-        return $user->can('ticketConfig.setup');
+        return $user->can('ticketConfig.create');
     }
 }

@@ -2,7 +2,9 @@
 
 use App\Models\User;
 
-test('auth user can get bot token', function () {
+use function PHPUnit\Framework\assertFalse;
+
+test('can read bot token', function () {
     $user = User::factory()->owner()->create();
 
     $this->assertDatabaseMissing('users', ['name' => 'Discord Bot']);
@@ -28,8 +30,9 @@ test('auth user can get bot token', function () {
     $this->assertEquals(1, $botUser->tokens()->count());
 });
 
-test('none owner user can not get bot token', function () {
+test('can not read without permission', function () {
     $user = User::factory()->create();
+    assertFalse($user->can('botToken.read'));
 
     $this->assertDatabaseMissing('users', ['name' => 'Discord Bot']);
 

@@ -2,10 +2,12 @@
 
 namespace Database\Factories;
 
+use App\Enums\DiscordButton;
+use App\Models\Application;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Application>
+ * @extends Factory<Application>
  */
 class ApplicationFactory extends Factory
 {
@@ -26,5 +28,19 @@ class ApplicationFactory extends Factory
             'confirmation_message' => fake()->sentence(2),
             'completion_message' => fake()->sentence(2),
         ];
+    }
+
+    public function withEmbed(): static
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'embed_title' => fake()->sentence(),
+                'embed_description' => fake()->text(),
+                'embed_color' => fake()->hexColor(),
+                'embed_channel_id' => (string) fake()->numberBetween(100000000000000000, 999999999999999999),
+                'embed_button_color' => fake()->randomElement(DiscordButton::cases()),
+                'embed_button_text' => fake()->word(),
+            ];
+        });
     }
 }

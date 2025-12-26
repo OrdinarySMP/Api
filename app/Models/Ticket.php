@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Enums\TicketState;
+use Database\Factories\TicketFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -16,10 +19,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $created_by_discord_user_id
  * @property string|null $closed_by_discord_user_id
  * @property string|null $closed_reason
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\TicketButton|null $ticketButton
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\TicketTranscript> $ticketTranscripts
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read TicketButton|null $ticketButton
+ * @property-read Collection<int, TicketTranscript> $ticketTranscripts
  * @property-read int|null $ticket_transcripts_count
  *
  * @method static \Database\Factories\TicketFactory factory($count = null, $state = [])
@@ -40,7 +43,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Ticket extends Model
 {
-    /** @use HasFactory<\Database\Factories\TicketFactory> */
+    /** @use HasFactory<TicketFactory> */
     use HasFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];

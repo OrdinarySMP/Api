@@ -25,13 +25,13 @@ class TicketButtonPingRoleData extends Data
     public static function fromTicketButtonPingRole(TicketButtonPingRole $ticketButtonPingRole): self
     {
         $discordRepository = new DiscordRepository;
-        $role = $discordRepository->roles()->first(fn ($role) => $role['id'] === $ticketButtonPingRole->role_id);
+        $role = $discordRepository->roles()?->first(fn ($role) => $role->id === $ticketButtonPingRole->role_id);
 
         return new self(
             $ticketButtonPingRole->id,
             $ticketButtonPingRole->ticket_button_id,
             $ticketButtonPingRole->role_id,
-            $role ? $role['name'] : 'role-not-found',
+            $role->name ?? 'role-not-found',
             $ticketButtonPingRole->created_at,
             $ticketButtonPingRole->updated_at,
         );

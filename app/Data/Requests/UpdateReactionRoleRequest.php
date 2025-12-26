@@ -7,9 +7,11 @@ use App\Rules\DiscordMessageRule;
 use App\Rules\EmojiRule;
 use App\Rules\RoleRule;
 use Illuminate\Container\Attributes\CurrentUser;
+use Spatie\LaravelData\Attributes\MergeValidationRules;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelData\Optional;
 
+#[MergeValidationRules]
 class UpdateReactionRoleRequest extends Data
 {
     public function __construct(
@@ -30,9 +32,9 @@ class UpdateReactionRoleRequest extends Data
     public static function rules(): array
     {
         return [
-            'message_link' => ['required', 'string', new DiscordMessageRule],
-            'emoji' => ['required', 'string', new EmojiRule],
-            'role_id' => ['required', 'string', new RoleRule],
+            'message_link' => [new DiscordMessageRule],
+            'emoji' => [new EmojiRule],
+            'role_id' => [new RoleRule],
         ];
     }
 }

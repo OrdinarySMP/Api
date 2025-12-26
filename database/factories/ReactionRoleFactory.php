@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Models\ReactionRole;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ReactionRole>
+ * @extends Factory<ReactionRole>
  */
 class ReactionRoleFactory extends Factory
 {
