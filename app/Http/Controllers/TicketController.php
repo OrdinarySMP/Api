@@ -9,7 +9,9 @@ use App\Data\TicketData;
 use App\Enums\TicketState;
 use App\Models\Ticket;
 use App\Models\TicketButton;
+use App\Models\User;
 use App\Repositories\TicketRepository;
+use Illuminate\Container\Attributes\CurrentUser;
 use Illuminate\Support\Facades\Http;
 use Spatie\LaravelData\DataCollection;
 use Spatie\LaravelData\PaginatedDataCollection;
@@ -27,16 +29,23 @@ class TicketController extends Controller
      *
      * @return PaginatedDataCollection<array-key, TicketData>|DataCollection<array-key, TicketData>
      */
-    public function index(ReadTicketRequest $request): PaginatedDataCollection|DataCollection
-    {
-        $tickets = QueryBuilder::for(Ticket::class)
+    public function index(
+        #[CurrentUser] User $user,
+        ReadTicketRequest $request
+    ): PaginatedDataCollection|DataCollection {
+        $ticketsQuery = QueryBuilder::for(Ticket::class)
             ->allowedIncludes(['ticketButton.ticketTeam.ticketTeamRoles', 'ticketTranscripts'])
             ->allowedSorts('created_at')
             ->allowedFilters([
                 AllowedFilter::exact('id'),
                 AllowedFilter::exact('state'),
-            ])
-            ->getOrPaginate();
+            ]);
+
+        if ($user->cannot('ticket.read')) {
+            $ticketsQuery->where('created_by_discord_user_id', $user->discord_id);
+        }
+
+        $tickets = $ticketsQuery->getOrPaginate();
 
         if (request()->has('full')) {
             return TicketData::collect($tickets, DataCollection::class)->wrap('data');
