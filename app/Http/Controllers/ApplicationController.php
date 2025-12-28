@@ -3,6 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Data\ApplicationData;
+use App\Data\Discord\Component\ActionRowData;
+use App\Data\Discord\Component\ButtonData;
+use App\Data\Discord\Embed\EmbedData;
 use App\Data\Requests\CreateApplicationRequest;
 use App\Data\Requests\DeleteApplicationRequest;
 use App\Data\Requests\ReadApplicationRequest;
@@ -322,28 +325,31 @@ class ApplicationController extends Controller
         if (! $application->embed_title ||
             ! $application->embed_description ||
             ! $application->embed_color ||
-            ! $application->embed_channel_id
+            ! $application->embed_channel_id ||
+            ! $application->embed_button_color ||
+            ! $application->embed_button_text
         ) {
             return false;
         }
+
         $data = [
             'embeds' => [
-                [
-                    'title' => $application->embed_title,
-                    'description' => $application->embed_description,
-                    'color' => hexdec(str_replace('#', '', $application->embed_color)),
-                ],
+                new EmbedData(
+                    title: $application->embed_title,
+                    description: $application->embed_description,
+                    color: (string) hexdec(str_replace('#', '', $application->embed_color)),
+                ),
             ],
             'components' => [
-                [
-                    'type' => 1,
-                    'components' => [[
-                        'type' => 2, // button
-                        'custom_id' => 'applicationSubmission-start-'.$application->id,
-                        'style' => $application->embed_button_color,
-                        'label' => $application->embed_button_text,
-                    ]],
-                ],
+                new ActionRowData(
+                    components: collect([
+                        new ButtonData(
+                            custom_id: 'applicationSubmission-start-'.$application->id,
+                            style: $application->embed_button_color,
+                            label: $application->embed_button_text,
+                        ),
+                    ])
+                ),
             ],
         ];
         $response = Http::discordBot()->post('/channels/'.$application->embed_channel_id.'/messages', $data);

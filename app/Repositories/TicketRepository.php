@@ -2,8 +2,12 @@
 
 namespace App\Repositories;
 
+use App\Data\Discord\Component\ActionRowData;
+use App\Data\Discord\Component\ButtonData;
+use App\Data\Discord\Component\EmojiData;
+use App\Data\Discord\Embed\EmbedData;
+use App\Data\Discord\Embed\FieldsData;
 use App\Data\Requests\CreateTicketRequest;
-use App\Enums\DiscordButton;
 use App\Enums\TicketState;
 use App\Models\Ticket;
 use App\Models\TicketButton;
@@ -116,34 +120,28 @@ class TicketRepository
      */
     public function sendInitialMessage(Ticket $ticket): array
     {
-        $closeButton = [
-            'type' => 2, // button
-            'custom_id' => 'ticket-close-'.$ticket->id,
-            'style' => DiscordButton::Danger,
-            'label' => 'Close',
-            'emoji' => ['name' => '🔒'],
-        ];
-
-        $closeWithReasonButton = [
-            'type' => 2, // button
-            'custom_id' => 'ticket-closeWithReason-'.$ticket->id,
-            'style' => DiscordButton::Danger,
-            'label' => 'Close With Reason',
-            'emoji' => ['name' => '🔒'],
-        ];
+        $buttons = collect([
+            ButtonData::danger(
+                'ticket-close-'.$ticket->id,
+                'Close',
+                new EmojiData('🔒'),
+            ),
+            ButtonData::danger(
+                'ticket-closeWithReason-'.$ticket->id,
+                'Close With Reason',
+                new EmojiData('🔒'),
+            ),
+        ]);
 
         $response = Http::discordBot()->post('/channels/'.$ticket->channel_id.'/messages', [
             'embeds' => [
-                [
-                    'description' => $ticket->ticketButton?->initial_message,
-                    'color' => hexdec('22e629'), // Green
-                ],
+                new EmbedData(
+                    description: $ticket->ticketButton?->initial_message,
+                    color: (string) hexdec('22e629'), // Green
+                ),
             ],
             'components' => [
-                [
-                    'type' => 1,
-                    'components' => [$closeButton, $closeWithReasonButton],
-                ],
+                new ActionRowData(components: $buttons),
             ],
         ]);
 
@@ -158,60 +156,57 @@ class TicketRepository
          */
         $ticketConfig = TicketConfig::where('guild_id', $guildId)->first();
 
-        $transcriptButton = [
-            'type' => 2, // button
-            'style' => DiscordButton::Link,
-            'label' => 'Transcript',
-            'url' => config('services.frontend.base_url').'/ticket/transcript/'.$ticket->id,
-        ];
+        $buttons = collect([
+            ButtonData::link(
+                'Transcript',
+                config('services.frontend.base_url').'/ticket/transcript/'.$ticket->id,
+            ),
+        ]);
 
-        $embed = [
-            'title' => 'Ticket Closes',
-            'color' => hexdec('22e629'), // Green
-            'fields' => [
-                [
-                    'name' => 'Ticket ID',
-                    'value' => $ticket->id,
-                    'inline' => true,
-                ],
-                [
-                    'name' => 'Opened By',
-                    'value' => '<@'.$ticket->created_by_discord_user_id.'>',
-                    'inline' => true,
-                ],
-                [
-                    'name' => 'Closed By',
-                    'value' => '<@'.$ticket->closed_by_discord_user_id.'>',
-                    'inline' => true,
-                ],
-                [
-                    'name' => 'Ticket type',
-                    'value' => $ticket->ticketButton->text ?? '---',
-                    'inline' => true,
-                ],
-                [
-                    'name' => 'Open Time',
-                    'value' => '<t:'.$ticket->created_at?->timestamp.'>',
-                    'inline' => true,
-                ],
-                [
-                    'name' => 'Close Time',
-                    'value' => '<t:'.$ticket->updated_at?->timestamp.'>',
-                    'inline' => true,
-                ],
-                [
-                    'name' => 'Reason',
-                    'value' => $ticket->closed_reason ?? '---',
-                ],
-            ],
-        ];
+        $embed = new EmbedData(
+            title: 'Ticket Closes',
+            color: (string) hexdec('22e629'), // Green
+            fields: collect([
+                new FieldsData(
+                    name: 'Ticket ID',
+                    value: (string) $ticket->id,
+                    inline: true,
+                ),
+                new FieldsData(
+                    name: 'Opened By',
+                    value: '<@'.$ticket->created_by_discord_user_id.'>',
+                    inline: true,
+                ),
+                new FieldsData(
+                    name: 'Closed By',
+                    value: '<@'.$ticket->closed_by_discord_user_id.'>',
+                    inline: true,
+                ),
+                new FieldsData(
+                    name: 'Ticket type',
+                    value: $ticket->ticketButton->text ?? '---',
+                    inline: true,
+                ),
+                new FieldsData(
+                    name: 'Open Time',
+                    value: '<t:'.$ticket->created_at?->timestamp.'>',
+                    inline: true,
+                ),
+                new FieldsData(
+                    name: 'Close Time',
+                    value: '<t:'.$ticket->updated_at?->timestamp.'>',
+                    inline: true,
+                ),
+                new FieldsData(
+                    name: 'Reason',
+                    value: $ticket->closed_reason ?? '---',
+                ),
+            ]),
+        );
         $response = Http::discordBot()->post('/channels/'.$ticketConfig->transcript_channel_id.'/messages', [
-            'embeds' => [$embed],
+            'embeds' => collect([$embed]),
             'components' => [
-                [
-                    'type' => 1,
-                    'components' => [$transcriptButton],
-                ],
+                new ActionRowData(components: $buttons),
             ],
         ]);
 

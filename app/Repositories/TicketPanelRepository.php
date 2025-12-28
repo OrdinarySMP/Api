@@ -2,6 +2,10 @@
 
 namespace App\Repositories;
 
+use App\Data\Discord\Component\ActionRowData;
+use App\Data\Discord\Component\ButtonData;
+use App\Data\Discord\Component\EmojiData;
+use App\Data\Discord\Embed\EmbedData;
 use App\Models\TicketPanel;
 use Illuminate\Support\Facades\Http;
 
@@ -13,43 +17,26 @@ class TicketPanelRepository
         if ($buttons->isEmpty()) {
             return false;
         }
-        /**
-         * @var mixed $components
-         */
-        $components = $buttons->map(function ($ticketButton): array {
-            $emoji = ['name' => $ticketButton->emoji];
-            if (str_contains($ticketButton->emoji, '<') && str_contains($ticketButton->emoji, '>')) {
-                $discordEmoji = str_replace('<', '', $ticketButton->emoji);
-                $discordEmoji = str_replace('>', '', $discordEmoji);
-                [$emojiName, $emojiId] = explode(':', $discordEmoji);
-                $emoji = [
-                    'name' => $emojiName,
-                    'id' => $emojiId,
-                ];
-            }
 
-            return [
-                'type' => 2, // button
-                'custom_id' => 'ticket-create-'.$ticketButton->id,
-                'style' => $ticketButton->color->value,
-                'label' => $ticketButton->text,
-                'emoji' => $emoji,
-            ];
+        $components = $buttons->map(function ($ticketButton): ButtonData {
+            return new ButtonData(
+                custom_id: 'ticket-create-'.$ticketButton->id,
+                style: $ticketButton->color,
+                label: $ticketButton->text,
+                emoji: EmojiData::from($ticketButton),
+            );
         });
 
         $data = [
             'embeds' => [
-                [
-                    'title' => $ticketPanel->title,
-                    'description' => $ticketPanel->message,
-                    'color' => hexdec(str_replace('#', '', $ticketPanel->embed_color)),
-                ],
+                new EmbedData(
+                    title: $ticketPanel->title,
+                    description: $ticketPanel->message,
+                    color: (string) hexdec(str_replace('#', '', $ticketPanel->embed_color)),
+                ),
             ],
             'components' => [
-                [
-                    'type' => 1,
-                    'components' => $components,
-                ],
+                new ActionRowData(components: $components),
             ],
         ];
 
