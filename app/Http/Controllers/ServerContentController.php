@@ -141,13 +141,9 @@ class ServerContentController extends Controller
      */
     private function getMessages(string $message, Collection $serverContents): array
     {
-        $mapFunction = function ($data) {
-            return '- ['.$data['name'].']('.$data['url'].")\n  - ".$data['description'];
-        };
-
         $messages = [
             $message,
-            ...array_map($mapFunction, $serverContents->toArray()),
+            ...$serverContents->map(fn ($data) => '- ['.$data['name'].']('.$data['url'].")\n  - ".$data['description']),
         ];
         $chunkedMessages = [''];
         $key = 0;

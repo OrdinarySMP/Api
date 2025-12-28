@@ -2,14 +2,20 @@
 
 namespace App\Repositories;
 
+use App\Data\Discord\Component\ActionRowData;
+use App\Data\Discord\Component\ButtonData;
+use App\Data\Discord\Component\StringCollectorData;
+use App\Data\Discord\Component\StringCollectorOptionData;
+use App\Data\Discord\Embed\EmbedData;
+use App\Data\Discord\Embed\FieldsData;
+use App\Data\Discord\Embed\ThumbnailData;
 use App\Data\Discord\MemberData;
 use App\Enums\ApplicationSubmissionState;
-use App\Enums\DiscordButton;
 use App\Models\ApplicationSubmission;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class ApplicationSubmissionRepository
 {
@@ -92,37 +98,8 @@ class ApplicationSubmissionRepository
 
     /**
      * @return array{
-     *         embeds: array<array{
-     *             title: string,
-     *             fields: array{array{
-     *                 name: string,
-     *                 value: string
-     *             }},
-     *             timestamp: string,
-     *             color: string,
-     *             thumbnail: array{url: string}
-     *         }>,
-     *         components: \Illuminate\Support\Collection<
-     *             int,
-     *             non-empty-array{
-     *                 type?: int,
-     *                 components?: array<array{
-     *                     type: int,
-     *                     custom_id: string,
-     *                     style: DiscordButton,
-     *                     label: string
-     *                 }>
-     *            }|non-empty-array{
-     *                type?: int,
-     *                components?: array<array{
-     *                    type: int,
-     *                    custom_id: string,
-     *                    options: array<array{label:string, value:string, description:string}>,
-     *                    placeholder: string,
-     *                    min_values: int,
-     *                    max_values: int,
-     *                }>
-     *            }>
+     *         embeds: Collection<int, EmbedData>,
+     *         components: Collection<int, ActionRowData>
      *        }
      */
     private function getMessageData(ApplicationSubmission $applicationSubmission): array
@@ -131,27 +108,15 @@ class ApplicationSubmissionRepository
         $buttonActionRow = $this->getButtonsActionRow($applicationSubmission);
         $acceptActionRow = $this->getAcceptActionRow($applicationSubmission);
         $denyActionRow = $this->getDenyActionRow($applicationSubmission);
-        $components = collect([$buttonActionRow, $acceptActionRow, $denyActionRow])->filter(fn ($component) => ! empty($component))->values();
+        $components = collect([$buttonActionRow, $acceptActionRow, $denyActionRow])->filter(fn ($component) => $component !== null)->values();
 
         return [
-            'embeds' => [$embed],
+            'embeds' => collect([$embed]),
             'components' => $components,
         ];
     }
 
-    /**
-     * @return array{
-     *         title: string,
-     *         fields: array{array{
-     *             name: string,
-     *             value: string
-     *         }},
-     *         timestamp: string,
-     *         color: string,
-     *         thumbnail: array{url: string}
-     *        }
-     */
-    private function getSubmissionEmbed(ApplicationSubmission $applicationSubmission): array
+    private function getSubmissionEmbed(ApplicationSubmission $applicationSubmission): EmbedData
     {
         $member = $this->getMember($applicationSubmission);
         $statsField = $this->getStatsField($applicationSubmission, $member);
@@ -172,22 +137,21 @@ class ApplicationSubmissionRepository
             $index = ((int) $member->user?->id >> 22) % 6;
             $avatar = "https://cdn.discordapp.com/embed/avatars/{$index}.png";
         }
+        $thumbnail = new ThumbnailData($avatar);
 
         if ($applicationQuestionAnswers->count() > 25) {
-            return [
-                'title' => $title,
-                'description' => "Application Number: **{$applicationSubmissionCount}**",
-                'fields' => [$tooLongField, $statsField],
-                'timestamp' => now()->toIso8601String(),
-                'color' => $this->getEmbedColor($applicationSubmission),
-                'thumbnail' => [
-                    'url' => $avatar,
-                ],
-            ];
+            return new EmbedData(
+                title: $title,
+                description: "Application Number: **{$applicationSubmissionCount}**",
+                color: $this->getEmbedColor($applicationSubmission),
+                fields: collect([$tooLongField, $statsField]),
+                timestamp: now()->toIso8601String(),
+                thumbnail: $thumbnail,
+            );
         }
 
         $totalLenght = 0;
-        $fields = [];
+        $fields = collect([]);
 
         $applicationSubmission->applicationQuestionAnswers->each(function ($applicationQuestionAnswer) use (&$fields, &$totalLenght) {
             $answer = strlen($applicationQuestionAnswer->answer) < 1024 ?
@@ -198,42 +162,38 @@ class ApplicationSubmissionRepository
             $totalLenght += strlen($answer);
             $totalLenght += strlen($question);
 
-            $fields[] = [
-                'name' => "**{$applicationQuestionAnswer->applicationQuestion?->order}. {$question}**",
-                'value' => $answer,
-            ];
+            $fields->push(new FieldsData(
+                name: "**{$applicationQuestionAnswer->applicationQuestion?->order}. {$question}**",
+                value: $answer,
+            ));
         });
 
-        $totalLenght += strlen($statsField['name']);
-        $totalLenght += strlen($statsField['value']);
+        $totalLenght += strlen($statsField->name);
+        $totalLenght += strlen($statsField->value);
 
-        $fields[] = $statsField;
+        $fields->push($statsField);
 
         $totalLenght += strlen($title);
 
         if ($totalLenght > 6000) {
-            return [
-                'title' => $title,
-                'description' => "Application Number: **{$applicationSubmissionCount}**",
-                'fields' => [$tooLongField, $statsField],
-                'timestamp' => now()->toIso8601String(),
-                'color' => $this->getEmbedColor($applicationSubmission),
-                'thumbnail' => [
-                    'url' => $avatar,
-                ],
-            ];
+            return new EmbedData(
+                title: $title,
+                description: "Application Number: **{$applicationSubmissionCount}**",
+                color: $this->getEmbedColor($applicationSubmission),
+                fields: collect([$tooLongField, $statsField]),
+                timestamp: now()->toIso8601String(),
+                thumbnail: $thumbnail,
+            );
         }
 
-        return [
-            'title' => $title,
-            'description' => "Application Number: **{$applicationSubmissionCount}**",
-            'fields' => $fields,
-            'timestamp' => now()->toIso8601String(),
-            'color' => $this->getEmbedColor($applicationSubmission),
-            'thumbnail' => [
-                'url' => $avatar,
-            ],
-        ];
+        return new EmbedData(
+            title: $title,
+            description: "Application Number: **{$applicationSubmissionCount}**",
+            color: $this->getEmbedColor($applicationSubmission),
+            fields: $fields,
+            timestamp: now()->toIso8601String(),
+            thumbnail: $thumbnail,
+        );
     }
 
     public function getMember(ApplicationSubmission $applicationSubmission): MemberData
@@ -258,10 +218,7 @@ class ApplicationSubmissionRepository
         };
     }
 
-    /**
-     * @return array{name:string, value:string}
-     */
-    private function getStatsField(ApplicationSubmission $applicationSubmission, MemberData $member): array
+    private function getStatsField(ApplicationSubmission $applicationSubmission, MemberData $member): FieldsData
     {
         $applicationSubmissionCount = ApplicationSubmission::completed()
             ->where('discord_id', $applicationSubmission->discord_id)
@@ -282,75 +239,49 @@ class ApplicationSubmissionRepository
             "**Application Number:** {$applicationSubmissionCount}";
         $statsTitle = 'Application Stats:';
 
-        return [
-            'name' => $statsTitle,
-            'value' => $stats,
-        ];
+        return new FieldsData(
+            name: $statsTitle,
+            value: $stats,
+        );
     }
 
-    /**
-     * @return array{name:string, value:string}
-     */
-    private function getTooLongField(): array
+    private function getTooLongField(): FieldsData
     {
-        return [
-            'name' => '**Application too long**',
-            'value' => 'Please view the application on the thread',
-        ];
+        return new FieldsData(
+            name: '**Application too long**',
+            value: 'Please view the application on the thread',
+        );
     }
 
-    /**
-     * @return array{
-     *     type?: int,
-     *     components?: array<array{
-     *         type: int,
-     *         custom_id: string,
-     *         style: DiscordButton,
-     *         label: string
-     *     }>
-     * }
-     */
-    private function getButtonsActionRow(ApplicationSubmission $applicationSubmission): array
+    private function getButtonsActionRow(ApplicationSubmission $applicationSubmission): ActionRowData
     {
         $buttons = collect();
         if ($applicationSubmission->state === ApplicationSubmissionState::Pending) {
-            $buttons->push([
-                'type' => 2, // button
-                'custom_id' => 'applicationSubmission-accept-'.$applicationSubmission->id,
-                'style' => DiscordButton::Success,
-                'label' => 'Accept',
-            ]);
-            $buttons->push([
-                'type' => 2, // button
-                'custom_id' => 'applicationSubmission-deny-'.$applicationSubmission->id,
-                'style' => DiscordButton::Danger,
-                'label' => 'Deny',
-            ]);
-            $buttons->push([
-                'type' => 2, // button
-                'custom_id' => 'applicationSubmission-acceptWithReason-'.$applicationSubmission->id,
-                'style' => DiscordButton::Success,
-                'label' => 'Accept with reason',
-            ]);
-            $buttons->push([
-                'type' => 2, // button
-                'custom_id' => 'applicationSubmission-denyWithReason-'.$applicationSubmission->id,
-                'style' => DiscordButton::Danger,
-                'label' => 'Deny with reason',
-            ]);
+
+            $buttons->push(ButtonData::success(
+                'applicationSubmission-accept-'.$applicationSubmission->id,
+                'Accept',
+            ));
+            $buttons->push(ButtonData::danger(
+                'applicationSubmission-deny-'.$applicationSubmission->id,
+                'Deny',
+            ));
+            $buttons->push(ButtonData::success(
+                'applicationSubmission-acceptWithReason-'.$applicationSubmission->id,
+                'Accept with reason',
+            ));
+            $buttons->push(ButtonData::danger(
+                'applicationSubmission-denyWithReason-'.$applicationSubmission->id,
+                'Deny with reason',
+            ));
         }
 
-        $buttons->push([
-            'type' => 2, // button
-            'custom_id' => 'applicationSubmission-history-'.$applicationSubmission->id,
-            'style' => DiscordButton::Primary,
-            'label' => 'History',
-        ]);
+        $buttons->push(ButtonData::primary(
+            'applicationSubmission-history-'.$applicationSubmission->id,
+            'History',
+        ));
 
-        return [
-            'type' => 1,
-            'components' => $buttons->toArray(),
-        ];
+        return new ActionRowData(components: $buttons);
     }
 
     private function sendResponseToUser(ApplicationSubmission $applicationSubmission, string $action): bool
@@ -447,6 +378,8 @@ class ApplicationSubmissionRepository
         $thread = $threadResponse->json();
         if (! $threadResponse->created()) {
             Log::error('Could not create thread:', $thread);
+
+            return;
         }
         $applicationSubmission->applicationQuestionAnswers
             ->each(function ($applicationQuestionAnswer) use ($thread) {
@@ -499,85 +432,49 @@ class ApplicationSubmissionRepository
         return $chunks;
     }
 
-    /**
-     * @return array{
-     *     type?: int,
-     *     components?: array<array{
-     *         type: int,
-     *         custom_id: string,
-     *         options: array<array{label:string, value:string, description:string}>,
-     *         placeholder: string,
-     *         min_values: int,
-     *         max_values: int,
-     *     }>
-     * }
-     */
-    private function getAcceptActionRow(ApplicationSubmission $applicationSubmission): array
+    private function getAcceptActionRow(ApplicationSubmission $applicationSubmission): ?ActionRowData
     {
         if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
-            return [];
+            return null;
         }
-        $options = $applicationSubmission->application?->acceptedResponses()->limit(25)->get()->map(fn ($response) => [
-            'label' => $response->name,
-            'value' => "{$response->id}",
-            'description' => Str::limit($response->response, 90),
-        ]) ?? collect();
+
+        /** @var Collection<int, StringCollectorOptionData> $options */
+        $options = StringCollectorOptionData::collect($applicationSubmission->application?->acceptedResponses()->limit(25)->get() ?? []);
 
         if ($options->isEmpty()) {
-            return [];
+            return null;
         }
+        $row = new StringCollectorData(
+            custom_id: "applicationSubmission-acceptTemplate-{$applicationSubmission->id}",
+            options: $options,
+            placeholder: 'Accept template',
+            min_values: 1,
+            max_values: 1,
+        );
 
-        return [
-            'type' => 1,
-            'components' => [[
-                'type' => 3,
-                'custom_id' => "applicationSubmission-acceptTemplate-{$applicationSubmission->id}",
-                'options' => $options->toArray(),
-                'placeholder' => 'Accept template',
-                'min_values' => 1,
-                'max_values' => 1,
-            ]],
-        ];
+        return new ActionRowData(components: collect([$row]));
     }
 
-    /**
-     * @return array{
-     *     type?: int,
-     *     components?: array<array{
-     *         type: int,
-     *         custom_id: string,
-     *         options: array<array{label:string, value:string, description:string}>,
-     *         placeholder: string,
-     *         min_values: int,
-     *         max_values: int,
-     *     }>
-     * }
-     */
-    private function getDenyActionRow(ApplicationSubmission $applicationSubmission): array
+    private function getDenyActionRow(ApplicationSubmission $applicationSubmission): ?ActionRowData
     {
         if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
-            return [];
+            return null;
         }
-        $options = $applicationSubmission->application?->deniedResponses()->limit(25)->get()->map(fn ($response) => [
-            'label' => $response->name,
-            'value' => "{$response->id}",
-            'description' => Str::limit($response->response, 90),
-        ]) ?? collect();
+
+        /** @var Collection<int, StringCollectorOptionData> $options */
+        $options = StringCollectorOptionData::collect($applicationSubmission->application?->deniedResponses()->limit(25)->get() ?? []);
 
         if ($options->isEmpty()) {
-            return [];
+            return null;
         }
+        $row = new StringCollectorData(
+            custom_id: "applicationSubmission-denyTemplate-{$applicationSubmission->id}",
+            options: $options,
+            placeholder: 'Deny template',
+            min_values: 1,
+            max_values: 1,
+        );
 
-        return [
-            'type' => 1,
-            'components' => [[
-                'type' => 3,
-                'custom_id' => "applicationSubmission-denyTemplate-{$applicationSubmission->id}",
-                'options' => $options->toArray(),
-                'placeholder' => 'Deny templates',
-                'min_values' => 1,
-                'max_values' => 1,
-            ]],
-        ];
+        return new ActionRowData(components: collect([$row]));
     }
 }

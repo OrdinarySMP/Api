@@ -1,19 +1,50 @@
 layout {
-    pane split_direction="Vertical" {
-        pane split_direction="Horizontal" {
-            pane command="docker" name="docker startup" {
+    default_tab_template {
+        pane size=1 borderless=true {
+            plugin location="zellij:tab-bar"
+        }
+        children
+        pane size=2 borderless=true {
+            plugin location="zellij:status-bar"
+        }
+    }
+    tab name="Dump Server" {
+        pane {
+            command "php"
+            name "Dump Server"
+            args "artisan" "dump"
+        }
+    }
+    tab name="Laravel" {
+        pane split_direction="Vertical" {
+            pane {
+                command "docker"
+                name "docker startup"
                 args "compose" "up" "-d"
             }
-            pane command="php" name="artisan serve" {
+            pane {
+                command "php"
+                name "artisan serve"
                 args "artisan" "serve"
             }
         }
-        pane split_direction="Horizontal" {
-            pane command="php" name="dump server" {
-                args "artisan" "dump"
-            }
+    }
+    tab name="Helper" {
+        pane {
+            command "yarn"
+            name "yarn dev"
+            args "dev"
+            cwd "../helper"
+        }
+    }
+    tab name="Bot" {
+        pane {
+            command "npm"
+            name "npm start"
+            args "start"
+            cwd "../bot"
         }
     }
 }
-session_name "OrdinaryApi"
+session_name "Ordinary SMP"
 attach_to_session true
