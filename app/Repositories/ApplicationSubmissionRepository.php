@@ -62,7 +62,7 @@ class ApplicationSubmissionRepository
             ApplicationSubmissionState::Denied => 'denied',
             default => 'handled',
         };
-        $responseSent = $this->sendResponseToUser($applicationSubmission, $action);
+        $responseSent = $this->sendResponseToUser($applicationSubmission);
         $roleResult = $this->handleRoles($applicationSubmission);
 
         $message = "<@{$applicationSubmission->handled_by}> {$action} <@{$applicationSubmission->discord_id}>\`s application for: `{$applicationSubmission->application?->name}`";
@@ -284,8 +284,13 @@ class ApplicationSubmissionRepository
         return new ActionRowData(components: $buttons);
     }
 
-    private function sendResponseToUser(ApplicationSubmission $applicationSubmission, string $action): bool
+    private function sendResponseToUser(ApplicationSubmission $applicationSubmission): bool
     {
+        $action = match ($applicationSubmission->state) {
+            ApplicationSubmissionState::Accepted => 'accepted',
+            default => 'reviewed',
+        };
+
         if ($applicationSubmission->applicationResponse) {
             $message = $applicationSubmission->applicationResponse->response;
         } elseif ($applicationSubmission->custom_response) {
