@@ -32,11 +32,7 @@ class TicketRepository
 
     public function createForButton(TicketButton $ticketButton, CreateTicketRequest $request): Ticket
     {
-        $roles = $this->discordRepository->roles();
-        /**
-         * @var array{id:string} $everyoneRole
-         */
-        $everyoneRole = $roles->firstWhere('name', '@everyone');
+        $everyoneRole = $this->discordRepository->everyoneRole();
 
         $ticket = Ticket::create([
             'ticket_button_id' => $request->ticket_button_id,
@@ -67,7 +63,7 @@ class TicketRepository
             'parent_id' => $ticketConfig->category_id,
             'permission_overwrites' => [
                 [
-                    'id' => $everyoneRole['id'], // everyone
+                    'id' => $everyoneRole?->id, // everyone
                     'type' => 0, // role
                     'deny' => 1 << 10, // view channel permission
                 ],

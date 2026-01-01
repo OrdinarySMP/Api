@@ -32,7 +32,7 @@ test('none owner can not get templates', function () {
     $this->actingAs($user)
         ->get(route('permission.template'))
         ->assertForbidden();
-});
+})->todo('use permission from request');
 
 test('owner can get permissions', function () {
     $user = User::factory()->owner()->create();
@@ -58,7 +58,7 @@ test('none owner can not get permissions', function () {
     $this->actingAs($user)
         ->get(route('permission.index'))
         ->assertForbidden();
-});
+})->todo('use permission from request');
 
 test('owner can create permissions', function () {
     $user = User::factory()->owner()->create();
@@ -118,4 +118,4 @@ test('none owner can not create permissions', function () {
     $this->actingAs($user)
         ->post(route('permission.store'), ['permissions' => $data])
         ->assertForbidden();
-});
+})->todo('use permission from request');

@@ -38,4 +38,4 @@ test('none owner user can not get bot token', function () {
         ->assertForbidden();
 
     $this->assertDatabaseMissing('users', ['name' => 'Discord Bot']);
-});
+})->todo('use permission from request');

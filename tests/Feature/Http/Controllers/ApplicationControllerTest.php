@@ -1,104 +1,165 @@
 <?php
 
+use App\Enums\DiscordButton;
 use App\Models\Application;
 use App\Models\User;
+use Tests\Traits\CrudPermissionTrait;
 
-test('auth user can get application', function () {
-    $application = Application::factory()->create();
-    $user = User::factory()->owner()->create();
+pest()->use(CrudPermissionTrait::class);
 
-    $this->actingAs($user)
-        ->get(route('application.index'))
-        ->assertOk()
-        ->assertJsonCount(1, 'data')
-        ->assertJsonPath('data.0.id', $application->id);
+describe('read operations', function () {
+    test('read permission', function () {
+        Application::factory()->create();
+        $this->assertReadPermissions('application.index', 'application.read');
+    });
+
+    test('owner can read application', function () {
+        $application = Application::factory()->create();
+        $user = User::factory()->owner()->create();
+
+        $this->actingAs($user)
+            ->get(route('application.index'))
+            ->assertOk()
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $application->id);
+    });
 });
 
-test('can create application', function () {
-    $user = User::factory()->owner()->create();
-    $data = [
-        'name' => 'name',
-        'is_active' => true,
-        'log_channel' => 'log_channel',
-        'accept_message' => 'accept_message',
-        'deny_message' => 'deny_message',
-        'confirmation_message' => 'confirmation_message',
-        'completion_message' => 'completion_message',
-        'restricted_role_ids' => ['1', '2'],
-        'accepted_role_ids' => ['3', '4'],
-        'denied_role_ids' => ['5', '6'],
-        'ping_role_ids' => ['7', '8'],
-        'accept_removal_role_ids' => ['9', '10'],
-        'deny_removal_role_ids' => ['11', '12'],
-        'pending_role_ids' => ['13', '14'],
-        'required_role_ids' => ['15', '16'],
-    ];
-    $validationData = collect($data)->except('restricted_role_ids', 'accepted_role_ids', 'denied_role_ids', 'ping_role_ids', 'accept_removal_role_ids', 'deny_removal_role_ids', 'pending_role_ids', 'required_role_ids')->toArray();
+describe('create operations', function () {
+    test('create permission', function () {
+        $data = [
+            'name' => 'name',
+            'is_active' => true,
+            'log_channel' => 'log_channel',
+            'accept_message' => 'accept_message',
+            'deny_message' => 'deny_message',
+            'confirmation_message' => 'confirmation_message',
+            'completion_message' => 'completion_message',
+        ];
+        $this->assertCreatePermissions('application.store', 'application.create', $data, Application::class);
+    });
 
-    $this->actingAs($user)
-        ->postJson(route('application.store'), $data)
-        ->assertCreated()
-        ->assertJson(['data' => $validationData]);
+    test('can create application', function () {
+        $user = User::factory()->owner()->create();
+        $data = [
+            'name' => 'name',
+            'is_active' => true,
+            'log_channel' => 'log_channel',
+            'accept_message' => 'accept_message',
+            'deny_message' => 'deny_message',
+            'confirmation_message' => 'confirmation_message',
+            'completion_message' => 'completion_message',
+            'activity_channel' => 'activity_channel',
+            'restricted_role_ids' => ['1', '2'],
+            'accepted_role_ids' => ['3', '4'],
+            'denied_role_ids' => ['5', '6'],
+            'ping_role_ids' => ['7', '8'],
+            'accept_removal_role_ids' => ['9', '10'],
+            'deny_removal_role_ids' => ['11', '12'],
+            'pending_role_ids' => ['13', '14'],
+            'required_role_ids' => ['15', '16'],
+            'embed_channel_id' => 'embed_channel_id',
+            'embed_title' => 'embed_title',
+            'embed_description' => 'embed_description',
+            'embed_color' => '#123123',
+            'embed_button_text' => 'embed_button_text',
+            'embed_button_color' => DiscordButton::Primary->value,
+        ];
+        $validationData = collect($data)
+            ->except('restricted_role_ids', 'accepted_role_ids', 'denied_role_ids', 'ping_role_ids', 'accept_removal_role_ids', 'deny_removal_role_ids', 'pending_role_ids', 'required_role_ids')
+            ->toArray();
 
-    $this->assertDatabaseHas('applications', $validationData);
+        $this->actingAs($user)
+            ->postJson(route('application.store'), $data)
+            ->assertCreated()
+            ->assertJson(['data' => $validationData]);
 
-    expect(Application::count())->toBe(1);
-    expect(Application::first()->restrictedRoles->map(fn ($restrictedRole) => $restrictedRole->role_id)->toArray())->toBe(['1', '2']);
-    expect(Application::first()->acceptedRoles->map(fn ($acceptedRole) => $acceptedRole->role_id)->toArray())->toBe(['3', '4']);
-    expect(Application::first()->deniedRoles->map(fn ($deniedRole) => $deniedRole->role_id)->toArray())->toBe(['5', '6']);
-    expect(Application::first()->pingRoles->map(fn ($pingRole) => $pingRole->role_id)->toArray())->toBe(['7', '8']);
-    expect(Application::first()->acceptRemovalRoles->map(fn ($acceptRemovalRole) => $acceptRemovalRole->role_id)->toArray())->toBe(['9', '10']);
-    expect(Application::first()->denyRemovalRoles->map(fn ($denyRemovalRole) => $denyRemovalRole->role_id)->toArray())->toBe(['11', '12']);
-    expect(Application::first()->pendingRoles->map(fn ($pendingRole) => $pendingRole->role_id)->toArray())->toBe(['13', '14']);
-    expect(Application::first()->requiredRoles->map(fn ($requiredRole) => $requiredRole->role_id)->toArray())->toBe(['15', '16']);
+        $this->assertDatabaseHas('applications', $validationData);
+
+        expect(Application::count())->toBe(1);
+        expect(Application::first()->restrictedRoles->map(fn ($restrictedRole) => $restrictedRole->role_id)->toArray())->toBe(['1', '2']);
+        expect(Application::first()->acceptedRoles->map(fn ($acceptedRole) => $acceptedRole->role_id)->toArray())->toBe(['3', '4']);
+        expect(Application::first()->deniedRoles->map(fn ($deniedRole) => $deniedRole->role_id)->toArray())->toBe(['5', '6']);
+        expect(Application::first()->pingRoles->map(fn ($pingRole) => $pingRole->role_id)->toArray())->toBe(['7', '8']);
+        expect(Application::first()->acceptRemovalRoles->map(fn ($acceptRemovalRole) => $acceptRemovalRole->role_id)->toArray())->toBe(['9', '10']);
+        expect(Application::first()->denyRemovalRoles->map(fn ($denyRemovalRole) => $denyRemovalRole->role_id)->toArray())->toBe(['11', '12']);
+        expect(Application::first()->pendingRoles->map(fn ($pendingRole) => $pendingRole->role_id)->toArray())->toBe(['13', '14']);
+        expect(Application::first()->requiredRoles->map(fn ($requiredRole) => $requiredRole->role_id)->toArray())->toBe(['15', '16']);
+    });
 });
 
-test('can update application', function () {
-    $user = User::factory()->owner()->create();
-    $application = Application::factory()->create();
-    $data = [
-        'name' => 'name',
-        'is_active' => true,
-        'log_channel' => 'log_channel',
-        'accept_message' => 'accept_message',
-        'deny_message' => 'deny_message',
-        'confirmation_message' => 'confirmation_message',
-        'completion_message' => 'completion_message',
-        'restricted_role_ids' => ['1', '2'],
-        'accepted_role_ids' => ['3', '4'],
-        'denied_role_ids' => ['5', '6'],
-        'ping_role_ids' => ['7', '8'],
-        'accept_removal_role_ids' => ['9', '10'],
-        'deny_removal_role_ids' => ['11', '12'],
-        'pending_role_ids' => ['13', '14'],
-        'required_role_ids' => ['15', '16'],
-    ];
-    $validationData = collect($data)->except('restricted_role_ids', 'accepted_role_ids', 'denied_role_ids', 'ping_role_ids', 'accept_removal_role_ids', 'deny_removal_role_ids', 'pending_role_ids', 'required_role_ids')->toArray();
+describe('update operations', function () {
+    test('update permission', function () {
+        $application = Application::factory()->create();
+        $data = [
+            'name' => 'Test',
+        ];
+        $this->assertUpdatePermissions('application.update', 'application.update', $application, $data, Application::class);
+    });
 
-    $this->actingAs($user)
-        ->patchJson(route('application.update', $application), $data)
-        ->assertOk()
-        ->assertJson(['data' => $validationData]);
+    test('can update application', function () {
+        $user = User::factory()->owner()->create();
+        $application = Application::factory()->create();
+        $data = [
+            'name' => 'name',
+            'is_active' => true,
+            'log_channel' => 'log_channel',
+            'accept_message' => 'accept_message',
+            'deny_message' => 'deny_message',
+            'confirmation_message' => 'confirmation_message',
+            'completion_message' => 'completion_message',
+            'activity_channel' => 'activity_channel',
+            'restricted_role_ids' => ['1', '2'],
+            'accepted_role_ids' => ['3', '4'],
+            'denied_role_ids' => ['5', '6'],
+            'ping_role_ids' => ['7', '8'],
+            'accept_removal_role_ids' => ['9', '10'],
+            'deny_removal_role_ids' => ['11', '12'],
+            'pending_role_ids' => ['13', '14'],
+            'required_role_ids' => ['15', '16'],
+            'embed_channel_id' => 'embed_channel_id',
+            'embed_title' => 'embed_title',
+            'embed_description' => 'embed_description',
+            'embed_color' => '#123123',
+            'embed_button_text' => 'embed_button_text',
+            'embed_button_color' => DiscordButton::Primary->value,
+        ];
+        $validationData = collect($data)
+            ->except('restricted_role_ids', 'accepted_role_ids', 'denied_role_ids', 'ping_role_ids', 'accept_removal_role_ids', 'deny_removal_role_ids', 'pending_role_ids', 'required_role_ids')
+            ->toArray();
 
-    $this->assertDatabaseHas('applications', $validationData);
+        $this->actingAs($user)
+            ->patchJson(route('application.update', $application), $data)
+            ->assertOk()
+            ->assertJson(['data' => $validationData]);
 
-    expect($application->restrictedRoles->map(fn ($restrictedRole) => $restrictedRole->role_id)->toArray())->toBe(['1', '2']);
-    expect($application->acceptedRoles->map(fn ($acceptedRole) => $acceptedRole->role_id)->toArray())->toBe(['3', '4']);
-    expect($application->deniedRoles->map(fn ($deniedRole) => $deniedRole->role_id)->toArray())->toBe(['5', '6']);
-    expect($application->pingRoles->map(fn ($pingRole) => $pingRole->role_id)->toArray())->toBe(['7', '8']);
-    expect($application->acceptRemovalRoles->map(fn ($acceptRemovalRole) => $acceptRemovalRole->role_id)->toArray())->toBe(['9', '10']);
-    expect($application->denyRemovalRoles->map(fn ($denyRemovalRole) => $denyRemovalRole->role_id)->toArray())->toBe(['11', '12']);
-    expect($application->pendingRoles->map(fn ($pendingRole) => $pendingRole->role_id)->toArray())->toBe(['13', '14']);
-    expect($application->requiredRoles->map(fn ($requiredRole) => $requiredRole->role_id)->toArray())->toBe(['15', '16']);
+        $this->assertDatabaseHas('applications', $validationData);
+
+        expect($application->restrictedRoles->map(fn ($restrictedRole) => $restrictedRole->role_id)->toArray())->toBe(['1', '2']);
+        expect($application->acceptedRoles->map(fn ($acceptedRole) => $acceptedRole->role_id)->toArray())->toBe(['3', '4']);
+        expect($application->deniedRoles->map(fn ($deniedRole) => $deniedRole->role_id)->toArray())->toBe(['5', '6']);
+        expect($application->pingRoles->map(fn ($pingRole) => $pingRole->role_id)->toArray())->toBe(['7', '8']);
+        expect($application->acceptRemovalRoles->map(fn ($acceptRemovalRole) => $acceptRemovalRole->role_id)->toArray())->toBe(['9', '10']);
+        expect($application->denyRemovalRoles->map(fn ($denyRemovalRole) => $denyRemovalRole->role_id)->toArray())->toBe(['11', '12']);
+        expect($application->pendingRoles->map(fn ($pendingRole) => $pendingRole->role_id)->toArray())->toBe(['13', '14']);
+        expect($application->requiredRoles->map(fn ($requiredRole) => $requiredRole->role_id)->toArray())->toBe(['15', '16']);
+    });
 });
 
-test('can delete application', function () {
-    $user = User::factory()->owner()->create();
-    $application = Application::factory()->create();
+describe('delete operations', function () {
+    test('delete permission', function () {
+        $application = Application::factory()->create();
+        $this->assertDeletePermissions('application.destroy', 'application.delete', $application, Application::class, true);
+    });
 
-    $this->actingAs($user)
-        ->deleteJson(route('application.destroy', $application))
-        ->assertOk();
+    test('can delete application', function () {
+        $user = User::factory()->owner()->create();
+        $application = Application::factory()->create();
 
-    $this->assertSoftDeleted('applications', ['id' => $application->id]);
+        $this->actingAs($user)
+            ->deleteJson(route('application.destroy', $application))
+            ->assertOk();
+
+        $this->assertSoftDeleted('applications', ['id' => $application->id]);
+    });
 });

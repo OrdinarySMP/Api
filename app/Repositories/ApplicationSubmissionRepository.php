@@ -434,12 +434,13 @@ class ApplicationSubmissionRepository
 
     private function getAcceptActionRow(ApplicationSubmission $applicationSubmission): ?ActionRowData
     {
-        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
+        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending ||
+            ! $applicationSubmission->application) {
             return null;
         }
 
         /** @var Collection<int, StringCollectorOptionData> $options */
-        $options = StringCollectorOptionData::collect($applicationSubmission->application?->acceptedResponses()->limit(25)->get() ?? []);
+        $options = StringCollectorOptionData::collect($applicationSubmission->application->acceptedResponses()->limit(25)->get());
 
         if ($options->isEmpty()) {
             return null;
@@ -457,12 +458,13 @@ class ApplicationSubmissionRepository
 
     private function getDenyActionRow(ApplicationSubmission $applicationSubmission): ?ActionRowData
     {
-        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending) {
+        if ($applicationSubmission->state !== ApplicationSubmissionState::Pending ||
+            ! $applicationSubmission->application) {
             return null;
         }
 
         /** @var Collection<int, StringCollectorOptionData> $options */
-        $options = StringCollectorOptionData::collect($applicationSubmission->application?->deniedResponses()->limit(25)->get() ?? []);
+        $options = StringCollectorOptionData::collect($applicationSubmission->application->deniedResponses()->limit(25)->get());
 
         if ($options->isEmpty()) {
             return null;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Data;
 
 use App\Models\User;
+use App\Repositories\DiscordRepository;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
@@ -25,15 +26,17 @@ class UserData extends Data
         public readonly Collection $permissions,
     ) {}
 
-    public static function fromUser(User $user, bool $isOwner = false): self
+    public static function fromUser(User $user): self
     {
+        $guild = new DiscordRepository()->guild();
+
         return new self(
             $user->id,
             $user->discord_id,
             $user->nickname,
             $user->name,
             $user->avatar,
-            $isOwner,
+            $guild && $guild->owner_id === $user->discord_id,
             $user->getPermissionsViaRoles()->pluck('name'),
         );
     }
