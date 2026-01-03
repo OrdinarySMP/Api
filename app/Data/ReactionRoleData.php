@@ -30,7 +30,7 @@ class ReactionRoleData extends Data
     {
         $discordRepository = new DiscordRepository;
 
-        $role = $discordRepository->roles()->first(fn ($role) => $role['id'] === $reactionRole->role_id);
+        $role = $discordRepository->roles()?->first(fn ($role) => $role->id === $reactionRole->role_id);
 
         return new self(
             $reactionRole->id,
@@ -40,7 +40,7 @@ class ReactionRoleData extends Data
             $reactionRole->role_id,
             $reactionRole->created_at,
             $reactionRole->updated_at,
-            $role ? $role['name'] : 'role-not-found',
+            $role->name ?? 'role-not-found',
             DiscordMessageRule::$discordChannelLinkBase.config('services.discord.server_id').'/'.$reactionRole->channel_id.'/'.$reactionRole->message_id,
         );
     }

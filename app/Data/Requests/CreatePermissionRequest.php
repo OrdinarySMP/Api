@@ -48,6 +48,12 @@ class CreatePermissionRequest extends Data
         'serverContent' => [
             'resend',
         ],
+        'ticket' => [
+            'read-own',
+        ],
+        'ticketTranscript' => [
+            'read-own',
+        ],
     ];
 
     public function __construct(

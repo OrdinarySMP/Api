@@ -28,30 +28,29 @@ class MeController extends Controller
 
         $discordGuildUser = $this->discordRepository->currentUser();
 
-        $guild = $this->discordRepository->guild();
-
-        if (! isset($discordGuildUser['roles'])) {
+        if (! $discordGuildUser?->roles) {
             Cache::forget('user-'.$user->id);
             Auth::guard('web')->logout();
 
             abort(403, 'You oauth2 token expired. Please login with Discord');
         }
 
-        if (! in_array(config('services.discord.required_role'), $discordGuildUser['roles'])) {
-            Cache::forget('user-'.$user->id);
-            Auth::guard('web')->logout();
+        $userRoles = collect($discordGuildUser->roles);
 
-            abort(403, 'You do not have the required permissions.');
+        $everyoneRole = $this->discordRepository->everyoneRole();
+        if ($everyoneRole) {
+            $userRoles->push($everyoneRole->id);
         }
 
-        $roles = Role::whereIn('name', $discordGuildUser['roles'])->get()->pluck('name');
+        $roles = Role::whereIn('name', $userRoles)->get()->pluck('name');
+        $userData = UserData::from($user);
 
-        if ($guild['owner_id'] === $user->discord_id) {
+        if ($userData->is_owner) {
             $roles->push('Owner');
         }
 
         $user->syncRoles($roles);
 
-        return response()->json(UserData::from($user, $guild['owner_id'] === $user->discord_id));
+        return response()->json($userData);
     }
 }

@@ -20,7 +20,7 @@ class UserData extends Data
         public readonly ?string $banner,
         public readonly ?int $accent_color,
         public readonly ?string $global_name,
-        public readonly ?GuildData $clan,
-        public readonly ?GuildData $primary_guild,
+        public readonly ?UserGuildData $clan,
+        public readonly ?UserGuildData $primary_guild,
     ) {}
 }
